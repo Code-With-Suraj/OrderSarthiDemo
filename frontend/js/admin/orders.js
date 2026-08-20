@@ -292,70 +292,160 @@ const AdminOrders = {
   },
 
   /**
-   * Execute state transition with skeleton row loading
+   * Re-render a single order row immediately in DOM (0-2ms)
+   * @param {Object} o
+   */
+  renderSingleRow(o) {
+    const row = document.getElementById(`order-row-${o.order_id}`);
+    if (!row) return;
+
+    // If active tab is filtering a specific status and order no longer matches, animate out
+    if (this.state.selectedStatus !== 'ALL' && o.order_status !== this.state.selectedStatus) {
+      row.style.transition = 'all 0.25s ease-out';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(-12px)';
+      setTimeout(() => {
+        if (row && row.parentNode) {
+          row.remove();
+          const tbody = document.getElementById('orders-table-tbody');
+          if (tbody && tbody.querySelectorAll('tr').length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-slate-500 text-xs font-medium">No orders matching criteria.</td></tr>`;
+          }
+        }
+      }, 250);
+      return;
+    }
+
+    const statusMeta = Utils.ORDER_STATUS_MAP[o.order_status] || { label: o.order_status, badgeClass: 'bg-slate-100 text-slate-700 border border-slate-200' };
+    const cleanDate = this.formatPickupDate(o.pickup_date);
+
+    row.className = 'hover:bg-slate-50 transition-all text-xs bg-emerald-50/70 duration-300';
+    row.innerHTML = `
+      <td class="py-3.5 px-4 font-mono font-extrabold text-slate-900">
+        <button onclick="AdminOrders.viewOrderDetails('${o.order_id}')" class="text-[#0C831F] hover:underline flex items-center gap-1 text-left font-extrabold">
+          <span>${o.order_id}</span>
+          <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+        </button>
+        <div class="text-[10px] text-slate-500 font-sans font-medium mt-0.5">${Utils.formatDate(o.created_at)}</div>
+      </td>
+      <td class="py-3.5 px-4 font-semibold text-slate-900">
+        <div class="font-extrabold text-slate-900">${Utils.escapeHTML(o.customer_name)}</div>
+        <div class="text-[11px] text-slate-500 font-mono font-medium">${o.customer_mobile || '—'}</div>
+      </td>
+      <td class="py-3.5 px-4">
+        <div class="font-extrabold text-slate-900">${cleanDate}</div>
+        <div class="text-[11px] text-emerald-800 font-semibold">${o.pickup_start} – ${o.pickup_end}</div>
+      </td>
+      <td class="py-3.5 px-4 font-extrabold text-slate-900 font-display text-sm">
+        ${Utils.formatCurrency(o.total_amount)}
+      </td>
+      <td class="py-3.5 px-4">
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${statusMeta.badgeClass}">
+          ${statusMeta.label}
+        </span>
+      </td>
+      <td class="py-3.5 px-4">
+        <div class="flex flex-col gap-1">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold w-fit ${o.payment_status === 'PAID' ? 'bg-emerald-100 text-[#0C831F] border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+            ${o.payment_status}
+          </span>
+          <span class="text-[10px] font-medium text-slate-500">
+            ${o.payment_method === 'RAZORPAY' ? '⚡ Razorpay' : '🏪 Cash/UPI'}
+          </span>
+        </div>
+      </td>
+      <td class="py-3.5 px-4 text-right" id="action-cell-${o.order_id}">
+        ${this.renderActionButtons(o)}
+      </td>
+    `;
+
+    setTimeout(() => {
+      if (row) row.classList.remove('bg-emerald-50/70');
+    }, 800);
+  },
+
+  /**
+   * Instant Optimistic State Transition (1-2ms response)
+   * Updates DOM and local state immediately, then syncs with server in background without blocking.
    * @param {string} orderId
    * @param {string} nextStatus
    */
   async transitionStatus(orderId, nextStatus) {
-    this.state.isActionPending = true;
+    const order = this.state.orders.find(o => o.order_id === orderId);
+    if (!order) return;
 
-    // Apply skeleton animation to the target row immediately
-    const row = document.getElementById(`order-row-${orderId}`);
-    if (row) {
-      row.innerHTML = `
-        <td class="py-4 px-4"><div class="h-4 w-28 skeleton mb-2"></div><div class="h-3 w-20 skeleton"></div></td>
-        <td class="py-4 px-4"><div class="h-4 w-24 skeleton mb-2"></div><div class="h-3 w-20 skeleton"></div></td>
-        <td class="py-4 px-4"><div class="h-4 w-24 skeleton mb-2"></div><div class="h-3 w-16 skeleton"></div></td>
-        <td class="py-4 px-4"><div class="h-5 w-16 skeleton"></div></td>
-        <td class="py-4 px-4"><div class="h-5 w-20 skeleton rounded-full"></div></td>
-        <td class="py-4 px-4"><div class="h-5 w-16 skeleton rounded"></div></td>
-        <td class="py-4 px-4 text-right"><div class="h-7 w-28 skeleton rounded-xl ml-auto"></div></td>
-      `;
+    const oldStatus = order.order_status;
+    const oldPaymentStatus = order.payment_status;
+
+    // 1. INSTANT LOCAL STATE UPDATE (0ms)
+    order.order_status = nextStatus;
+    if (nextStatus === 'PICKED_UP') {
+      order.payment_status = 'PAID';
     }
 
+    // 2. INSTANT DOM MUTATION (0-1ms)
+    this.renderSingleRow(order);
+
+    // If modal dialog is open for this order, update modal buttons instantly
+    const modal = document.getElementById('order-detail-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+      const modalOrderIdEl = modal.querySelector('h3');
+      if (modalOrderIdEl && modalOrderIdEl.textContent === orderId) {
+        this.showOrderModal(order);
+      }
+    }
+
+    // Instant toast feedback
+    const statusMeta = Utils.ORDER_STATUS_MAP[nextStatus] || { label: nextStatus };
+    Utils.showToast(`Order #${orderId} marked as ${statusMeta.label}`, 'success');
+
+    // WhatsApp prompt (optional, non-blocking)
+    if (order.customer_mobile) {
+      this.promptWhatsAppUpdate(orderId, order.customer_name, order.customer_mobile, nextStatus, order.total_amount);
+    }
+
+    // 3. BACKGROUND ASYNC SERVER SYNC (Non-blocking)
     try {
       await api.post('adminUpdateOrderStatus', {
         orderId: orderId,
         status: nextStatus
       }, true);
-
-      Utils.showToast(`Order #${orderId} moved to ${nextStatus}`, 'success');
-      
-      // Close modal if open for this order
-      const modal = document.getElementById('order-detail-modal');
-      if (modal && !modal.classList.contains('hidden')) {
-        modal.classList.add('hidden');
-      }
-
-      // Offer to send WhatsApp update to customer
-      const order = this.state.orders.find(o => o.order_id === orderId);
-      if (order && order.customer_mobile) {
-        this.promptWhatsAppUpdate(orderId, order.customer_name, order.customer_mobile, nextStatus, order.total_amount);
-      }
-
-      await this.loadOrders(false, false);
     } catch (err) {
-      Utils.showToast(err.message || 'Status update failed.', 'error');
-      await this.loadOrders(false, false);
-    } finally {
-      this.state.isActionPending = false;
+      console.error("Background status sync failed for order " + orderId + ":", err);
+      // Rollback on server error
+      order.order_status = oldStatus;
+      order.payment_status = oldPaymentStatus;
+      this.renderSingleRow(order);
+      Utils.showToast(`Failed to update order #${orderId}: ${err.message}. Reverted.`, 'error');
     }
   },
 
   /**
-   * View order items in modal dialog with skeleton loading
+   * View order items in modal dialog (Instant 1ms render from memory)
    * @param {string} orderId
    */
   async viewOrderDetails(orderId) {
-    this.showSkeletonModal(orderId);
+    const localOrder = this.state.orders.find(o => o.order_id === orderId);
+    if (localOrder) {
+      // Instant render from in-memory state
+      this.showOrderModal(localOrder);
+    } else {
+      this.showSkeletonModal(orderId);
+    }
 
     try {
-      const order = await api.get('getOrderDetails', { orderId }, true);
-      this.showOrderModal(order);
+      const fullOrder = await api.get('getOrderDetails', { orderId }, true);
+      // Merge full order items into local state and refresh modal
+      if (localOrder) {
+        Object.assign(localOrder, fullOrder);
+      }
+      this.showOrderModal(fullOrder);
     } catch (err) {
-      Utils.showToast('Failed to fetch details: ' + err.message, 'error');
-      const modal = document.getElementById('order-detail-modal');
-      if (modal) modal.classList.add('hidden');
+      if (!localOrder) {
+        Utils.showToast('Failed to fetch details: ' + err.message, 'error');
+        const modal = document.getElementById('order-detail-modal');
+        if (modal) modal.classList.add('hidden');
+      }
     }
   },
 
