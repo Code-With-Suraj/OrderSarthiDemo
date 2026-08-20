@@ -35,6 +35,26 @@
         <div id="cart-items-container" class="space-y-3.5">
           <!-- Injected via JavaScript -->
         </div>
+
+        <!-- Upsell Suggestions Container -->
+        <div id="cart-upsell-container" class="hidden pt-2">
+          <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs space-y-3.5">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900 font-display flex items-center gap-1.5">
+                  <span>✨ You May Also Like</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-[#0C831F]">Popular Picks</span>
+                </h3>
+                <p class="text-[11px] text-slate-500 font-medium">Frequently paired with items in your basket</p>
+              </div>
+              <a href="./shop.html" class="text-xs font-extrabold text-[#0C831F] hover:underline shrink-0">See All →</a>
+            </div>
+            
+            <div id="cart-upsell-slider" class="flex items-stretch gap-3 overflow-x-auto pb-2 no-scrollbar">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Cart Summary Card -->
@@ -122,6 +142,8 @@
         clearBtn?.classList.add('hidden');
         if (movCard) movCard.classList.add('hidden');
         if (summaryMovStatus) summaryMovStatus.innerHTML = '';
+        const upsellBox = document.getElementById('cart-upsell-container');
+        if (upsellBox) upsellBox.classList.add('hidden');
         if (proceedBtn) {
           proceedBtn.classList.add('opacity-40', 'pointer-events-none');
           proceedBtn.onclick = null;
@@ -272,6 +294,72 @@
           </div>
         </div>
       `).join('');
+
+      // Load Upsell Suggestions
+      loadUpsellSuggestions(items);
+    }
+
+    async function loadUpsellSuggestions(cartItems) {
+      const upsellContainer = document.getElementById('cart-upsell-container');
+      const slider = document.getElementById('cart-upsell-slider');
+      if (!upsellContainer || !slider) return;
+
+      try {
+        const catIds = [...new Set(cartItems.map(i => i.category_id).filter(Boolean))];
+        const exIds = cartItems.map(i => i.product_id).filter(Boolean);
+
+        const res = await api.get('getUpsellProducts', {
+          categoryIds: catIds.join(','),
+          excludeProductIds: exIds.join(','),
+          limit: 8
+        });
+
+        const products = res.products || [];
+        if (products.length === 0) {
+          upsellContainer.classList.add('hidden');
+          return;
+        }
+
+        upsellContainer.classList.remove('hidden');
+        slider.innerHTML = products.map(p => {
+          const hasDiscount = p.mrp > p.selling_price;
+          const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
+          const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200';
+
+          return `
+            <div class="w-36 sm:w-44 flex-shrink-0 bg-slate-50 hover:bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-2.5 flex flex-col justify-between transition-all group shadow-xs">
+              <a href="./product.html?id=${p.product_id}" class="block relative aspect-square rounded-xl overflow-hidden mb-2 bg-white border border-slate-100 p-1">
+                <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                ${hasDiscount ? `
+                  <span class="absolute top-1 left-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-[#2563EB] text-white">
+                    ${discountPercent}% OFF
+                  </span>
+                ` : ''}
+              </a>
+
+              <div class="flex-1">
+                <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">${Utils.escapeHTML(p.unit || 'unit')}</div>
+                <a href="./product.html?id=${p.product_id}" class="block text-xs font-bold text-slate-900 hover:text-[#0C831F] transition-colors line-clamp-2 leading-tight mb-1.5">
+                  ${Utils.escapeHTML(p.product_name)}
+                </a>
+              </div>
+
+              <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1 mt-1">
+                <div>
+                  <div class="text-xs sm:text-sm font-extrabold text-slate-900 font-display">${Utils.formatCurrency(p.selling_price)}</div>
+                  ${hasDiscount ? `<div class="text-[10px] text-slate-400 line-through">${Utils.formatCurrency(p.mrp)}</div>` : ''}
+                </div>
+                <button onclick="Cart.addItem(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="btn-add-outline text-[11px] font-extrabold !py-1 !px-2.5 shrink-0 shadow-xs">
+                  ADD
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.warn('Upsell suggestions load failed:', err);
+        upsellContainer.classList.add('hidden');
+      }
     }
 
     function clearAll() {

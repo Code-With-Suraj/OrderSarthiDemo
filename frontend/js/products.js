@@ -7,6 +7,7 @@ const ProductsController = {
   state: {
     products: [],
     categories: [],
+    bestsellers: [],
     selectedCategory: '',
     searchQuery: '',
     page: 1,
@@ -29,9 +30,89 @@ const ProductsController = {
     if (queryParams.q) this.state.searchQuery = queryParams.q;
 
     await this.loadCategories();
+    this.loadBestSellers();
     await this.loadProducts(true);
 
     this.setupEventListeners();
+  },
+
+  /**
+   * Load Best Seller items
+   */
+  async loadBestSellers() {
+    const section = document.getElementById('bestsellers-section');
+    if (!section) return;
+
+    try {
+      const res = await api.get('getBestSellers', { limit: 8 });
+      this.state.bestsellers = res.products || [];
+      this.renderBestSellers();
+    } catch (err) {
+      console.warn('Failed to load best sellers:', err);
+      if (section) section.classList.add('hidden');
+    }
+  },
+
+  /**
+   * Render Best Sellers section based on current filters
+   */
+  renderBestSellers() {
+    const section = document.getElementById('bestsellers-section');
+    const grid = document.getElementById('bestsellers-grid');
+    if (!section || !grid) return;
+
+    // Show bestsellers only when browsing all categories without active search
+    const hasFilter = Boolean(this.state.selectedCategory || this.state.searchQuery);
+    if (hasFilter || !this.state.bestsellers || this.state.bestsellers.length === 0) {
+      section.classList.add('hidden');
+      return;
+    }
+
+    section.classList.remove('hidden');
+    grid.innerHTML = this.state.bestsellers.map(p => {
+      const isOutOfStock = p.stock_status === 'OUT_OF_STOCK';
+      const hasDiscount = p.mrp > p.selling_price;
+      const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
+      const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300';
+
+      return `
+        <div class="w-40 sm:w-48 shrink-0 bg-white border border-slate-200 hover:border-amber-400 rounded-2xl p-3 flex flex-col justify-between group transition-all hover:shadow-md">
+          <a href="./product.html?id=${p.product_id}" class="block relative aspect-square rounded-xl overflow-hidden mb-2 bg-slate-50 border border-slate-100 p-1.5">
+            <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'opacity-40 grayscale' : ''}" loading="lazy" />
+            <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-500 text-white shadow-xs">
+              ★ Best Seller
+            </span>
+            ${hasDiscount && !isOutOfStock ? `
+              <span class="absolute bottom-1.5 left-1.5 px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-[#2563EB] text-white shadow-xs">
+                ${discountPercent}% OFF
+              </span>
+            ` : ''}
+          </a>
+
+          <div class="flex-1">
+            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">${Utils.escapeHTML(p.unit || '1 unit')}</div>
+            <a href="./product.html?id=${p.product_id}" class="block font-bold text-xs sm:text-sm text-slate-900 hover:text-[#0C831F] transition-colors line-clamp-2 leading-snug mb-2">
+              ${Utils.escapeHTML(p.product_name)}
+            </a>
+          </div>
+
+          <div class="mt-auto pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5">
+            <div>
+              <div class="text-sm font-extrabold text-slate-900 font-display">
+                ${Utils.formatCurrency(p.selling_price)}
+              </div>
+              ${hasDiscount ? `<div class="text-[10px] text-slate-400 line-through">${Utils.formatCurrency(p.mrp)}</div>` : ''}
+            </div>
+
+            <button onclick="Cart.addItem(${JSON.stringify(p).replace(/"/g, '&quot;')})"
+              ${isOutOfStock ? 'disabled' : ''}
+              class="btn-add-outline text-xs font-extrabold !py-1 !px-3 shrink-0 ${isOutOfStock ? 'opacity-40 !cursor-not-allowed' : ''}">
+              ADD
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
 
   /**
@@ -83,6 +164,7 @@ const ProductsController = {
   async selectCategory(categoryId) {
     this.state.selectedCategory = categoryId;
     this.renderCategoryPills();
+    this.renderBestSellers();
     await this.loadProducts(true);
   },
 
@@ -266,6 +348,7 @@ const ProductsController = {
 
       searchInput.addEventListener('input', Utils.debounce((e) => {
         this.state.searchQuery = e.target.value;
+        this.renderBestSellers();
         this.loadProducts(true);
       }, CONFIG.SEARCH_DEBOUNCE_MS));
     }

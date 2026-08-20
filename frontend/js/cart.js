@@ -48,6 +48,7 @@ const Cart = {
       items.push({
         product_id: product.product_id,
         product_name: product.product_name,
+        category_id: product.category_id || '',
         selling_price: Number(product.selling_price) || 0,
         mrp: Number(product.mrp) || Number(product.selling_price) || 0,
         unit: product.unit || 'unit',

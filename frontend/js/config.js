@@ -5,7 +5,7 @@
 
 const CONFIG = {
   // Replace this with your deployed Google Apps Script Web App URL
-  API_BASE_URL: "https://script.google.com/macros/s/AKfycbxMNLoP2N5aMPGmfIx864BgQlG5nQAdk4YXFG3F5H18ZrsKj1yyXl43ER0IMxF6reRt8Q/exec",
+  API_BASE_URL: "https://script.google.com/macros/s/AKfycbzK9rSEOGwX5uU1yyXh3GF8zkZoUj4eBYD8Ki8TtWMNZcy31877tlwvAsgCfuPoZ_GZJA/exec",
 
   // App & White-Label Platform Settings
   DEFAULT_SHOP_NAME: "Local Express Shop",
