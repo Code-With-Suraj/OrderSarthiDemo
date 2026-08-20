@@ -313,12 +313,12 @@
       slider.innerHTML = products.map(p => {
         const hasDiscount = p.mrp > p.selling_price;
         const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
-        const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200';
+        const imgUrl = Utils.formatImageUrl(p.image_url, 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200');
 
         return `
           <div class="w-36 sm:w-44 flex-shrink-0 bg-slate-50 hover:bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-2.5 flex flex-col justify-between transition-all group shadow-xs">
             <a href="./product.html?id=${p.product_id}" class="block relative aspect-square rounded-xl overflow-hidden mb-2 bg-white border border-slate-100 p-1">
-              <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+              <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=200'" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
               ${hasDiscount ? `
                 <span class="absolute top-1 left-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-[#2563EB] text-white">
                   ${discountPercent}% OFF

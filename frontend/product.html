@@ -124,12 +124,12 @@
       slider.innerHTML = products.map(p => {
         const hasDiscount = p.mrp > p.selling_price;
         const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
-        const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300';
+        const imgUrl = Utils.formatImageUrl(p.image_url, 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300');
 
         return `
           <div class="w-40 sm:w-48 flex-shrink-0 bg-slate-50 hover:bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-3 flex flex-col justify-between transition-all group shadow-xs">
             <a href="./product.html?id=${p.product_id}" class="block relative aspect-square rounded-xl overflow-hidden mb-2.5 bg-white border border-slate-100 p-1.5">
-              <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+              <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=300'" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
               ${hasDiscount ? `
                 <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#2563EB] text-white">
                   ${discountPercent}% OFF
@@ -197,13 +197,14 @@
       const hasDiscount = p.mrp > p.selling_price;
       const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
 
-      // Parse all images (from p.images array or p.image_url string)
+      // Parse and format all images (from p.images array or p.image_url string)
       let productImages = [];
       if (Array.isArray(p.images) && p.images.length > 0) {
         productImages = p.images.filter(Boolean);
       } else if (p.image_url) {
         productImages = String(p.image_url).split(/[\n,\r|]+/).map(s => s.trim()).filter(Boolean);
       }
+      productImages = productImages.map(img => Utils.formatImageUrl(img));
       if (productImages.length === 0) {
         productImages = ['https://images.unsplash.com/photo-1542838132-92c53300491e?w=600'];
       }
@@ -217,6 +218,7 @@
             <!-- Main Hero Image Display -->
             <div class="relative aspect-square rounded-3xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center p-4 group shadow-xs">
               <img id="main-product-image" src="${productImages[0]}" alt="${Utils.escapeHTML(p.product_name)}"
+                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=600'"
                 class="w-full h-full object-contain transition-all duration-300 ${isOutOfStock ? 'opacity-40 grayscale' : ''}" />
               
               <!-- Discount Badge -->
@@ -257,7 +259,9 @@
                 ${productImages.map((img, idx) => `
                   <button type="button" onclick="switchProductImage(${idx})"
                     class="gallery-thumbnail-btn relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 p-1 bg-white cursor-pointer shrink-0 transition-all duration-200 ${idx === 0 ? 'border-[#0C831F] ring-2 ring-[#0C831F]/30 scale-105 shadow-sm' : 'border-slate-200 hover:border-slate-400 opacity-75 hover:opacity-100'}">
-                    <img src="${img}" alt="${Utils.escapeHTML(p.product_name)} - View ${idx + 1}" class="w-full h-full object-contain" />
+                    <img src="${img}" alt="${Utils.escapeHTML(p.product_name)} - View ${idx + 1}"
+                      onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=200'"
+                      class="w-full h-full object-contain" />
                   </button>
                 `).join('')}
               </div>
@@ -383,7 +387,7 @@
       const counter = document.getElementById('gallery-counter-badge');
       if (mainImg) {
         mainImg.style.opacity = '0.3';
-        mainImg.src = window.currentProductImages[index];
+        mainImg.src = Utils.formatImageUrl(window.currentProductImages[index]);
         setTimeout(() => { mainImg.style.opacity = '1'; }, 100);
       }
       if (counter) {

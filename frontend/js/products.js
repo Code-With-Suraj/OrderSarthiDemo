@@ -90,12 +90,12 @@ const ProductsController = {
       const isOutOfStock = p.stock_status === 'OUT_OF_STOCK';
       const hasDiscount = p.mrp > p.selling_price;
       const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
-      const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300';
+      const imgUrl = Utils.formatImageUrl(p.image_url, 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300');
 
       return `
         <div class="w-40 sm:w-48 shrink-0 bg-white border border-slate-200 hover:border-amber-400 rounded-2xl p-3 flex flex-col justify-between group transition-all hover:shadow-md">
           <a href="./product.html?id=${p.product_id}" class="block relative aspect-square rounded-xl overflow-hidden mb-2 bg-slate-50 border border-slate-100 p-1.5">
-            <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'opacity-40 grayscale' : ''}" loading="lazy" />
+            <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=300'" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'opacity-40 grayscale' : ''}" loading="lazy" />
             <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-500 text-white shadow-xs">
               ★ Best Seller
             </span>
@@ -307,13 +307,14 @@ const ProductsController = {
     const isOutOfStock = p.stock_status === 'OUT_OF_STOCK';
     const hasDiscount = p.mrp > p.selling_price;
     const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
-    const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&auto=format&fit=crop&q=80';
+    const imgUrl = Utils.formatImageUrl(p.image_url, 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400');
 
     return `
       <div class="bg-white border border-slate-200 hover:border-slate-300 rounded-2xl p-3 sm:p-4 flex flex-col justify-between group relative transition-all duration-200 hover:shadow-md">
         <!-- Image & Discount Badge -->
         <a href="./product.html?id=${p.product_id}" class="block relative aspect-square rounded-xl overflow-hidden mb-3 bg-slate-50 border border-slate-100">
           <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" loading="lazy"
+            onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=400'"
             class="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300 ${isOutOfStock ? 'opacity-40 grayscale' : ''}" />
           
           ${hasDiscount && !isOutOfStock ? `

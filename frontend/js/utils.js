@@ -66,6 +66,30 @@ const Utils = {
   },
 
   /**
+   * Format and convert Google Drive and CDN URLs to direct image URLs
+   * @param {string} url
+   * @param {string} fallback
+   * @returns {string}
+   */
+  formatImageUrl(url, fallback = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500') {
+    if (!url || typeof url !== 'string') return fallback;
+    let clean = url.trim();
+    if (!clean) return fallback;
+
+    // Handle Google Drive Links (view, open, uc)
+    const driveMatch = clean.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || 
+                       clean.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                       clean.match(/\/d\/([a-zA-Z0-9_-]+)/);
+
+    if (driveMatch && (clean.includes('drive.google.com') || clean.includes('docs.google.com') || clean.includes('google.com'))) {
+      const fileId = driveMatch[1];
+      return `https://lh3.googleusercontent.com/d/${fileId}`;
+    }
+
+    return clean;
+  },
+
+  /**
    * Generate UUID v4 for idempotency keys and client tracking
    * @returns {string}
    */

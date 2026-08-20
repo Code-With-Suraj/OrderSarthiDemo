@@ -335,7 +335,7 @@ const AdminProducts = {
     strip.classList.remove('hidden');
     list.innerHTML = images.map((img, idx) => `
       <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-white border border-slate-200 p-0.5 shrink-0 group shadow-2xs">
-        <img src="${img.url}" class="w-full h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=100'" />
+        <img src="${Utils.formatImageUrl(img.url)}" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=100'" />
         <span class="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[8px] font-extrabold text-center py-0.2">
           ${idx === 0 ? 'Hero' : `#${idx + 1}`}
         </span>
