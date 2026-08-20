@@ -1,0 +1,58 @@
+{
+  "name": "OrderSarthi — Local Shop Ordering & POS",
+  "short_name": "OrderSarthi",
+  "description": "Order groceries and daily essentials from your local shop with instant pickup & smart POS billing.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#F8CB46",
+  "background_color": "#F4F6FB",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["shopping", "business", "productivity", "food"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Shop Catalog",
+      "short_name": "Catalog",
+      "description": "Browse store products & offers",
+      "url": "/shop.html",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Orders",
+      "short_name": "Orders",
+      "description": "View active orders and history",
+      "url": "/orders.html",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "⚡ POS Billing",
+      "short_name": "POS",
+      "description": "Owner quick counter billing & stock update",
+      "url": "/admin/pos.html",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Admin Dashboard",
+      "short_name": "Admin",
+      "description": "Manage orders, stock & store settings",
+      "url": "/admin/dashboard.html",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
+    }
+  ]
+}

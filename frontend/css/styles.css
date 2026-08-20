@@ -1,0 +1,201 @@
+@import "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap";
+
+/* Blinkit Theme Tokens & Variables */
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+  
+  --blinkit-yellow: #F8CB46;
+  --blinkit-yellow-dark: #E5B833;
+  --blinkit-yellow-light: #FFF9E6;
+
+  --blinkit-green: #0C831F;
+  --blinkit-green-hover: #096818;
+  --blinkit-green-light: #E7F6E9;
+
+  --bg-page: #F4F6FB;
+  --bg-card: #FFFFFF;
+  --border-light: #E8ECEF;
+  --text-main: #1C1C1C;
+  --text-muted: #666666;
+  --text-sub: #888888;
+}
+
+/* Base resets & typography */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Blinkit Clean Card Styles */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.glass-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Blinkit Button Styles */
+.btn-primary {
+  background-color: var(--blinkit-green);
+  color: #FFFFFF;
+  font-weight: 700;
+  border-radius: 0.625rem;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 6px rgba(12, 131, 31, 0.25);
+  transition: all 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid transparent;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--blinkit-green-hover);
+  box-shadow: 0 4px 10px rgba(12, 131, 31, 0.35);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: var(--text-main);
+  font-weight: 600;
+  border-radius: 0.625rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #94A3B8;
+  color: #000000;
+}
+
+/* Blinkit Green Outline Add Button */
+.btn-add-outline {
+  background-color: var(--blinkit-green-light);
+  color: var(--blinkit-green);
+  border: 1px solid var(--blinkit-green);
+  font-weight: 700;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  transition: all 0.15s ease;
+}
+
+.btn-add-outline:hover:not(:disabled) {
+  background-color: var(--blinkit-green);
+  color: #FFFFFF;
+}
+
+/* Skeleton Loading Animation (Light Theme) */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  border-radius: 0.5rem;
+}
+
+/* Sticky Bottom Cart Bar on Mobile (Blinkit Green Style) */
+.mobile-cart-bar {
+  background-color: var(--blinkit-green) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Category Circle Pill */
+.category-circle-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+.category-circle-card:hover {
+  border-color: var(--blinkit-yellow);
+  box-shadow: 0 4px 12px rgba(248, 203, 70, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Timeline Dots & Connectors for Tracking (Light) */
+.timeline-step {
+  position: relative;
+}
+.timeline-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 1.25rem;
+  top: 2.75rem;
+  bottom: -1rem;
+  width: 2px;
+  background: #E2E8F0;
+}
+.timeline-step.completed:not(:last-child)::after {
+  background: var(--blinkit-green);
+}
+.timeline-step.active:not(:last-child)::after {
+  background: linear-gradient(to bottom, var(--blinkit-green) 0%, #E2E8F0 100%);
+}
+
+/* Hide scrollbar helper */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

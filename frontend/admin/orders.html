@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Order Workflow — OrderSarthi</title>
+  
+  <meta name="theme-color" content="#F8CB46">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <div id="admin-nav"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Store Orders Management</h1>
+        <p class="text-xs sm:text-sm text-slate-500 font-medium">Accept, prepare, and complete customer Click & Collect orders</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Date Filter -->
+        <input type="date" id="admin-order-date"
+          class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 font-bold focus:outline-none focus:border-[#0C831F] shadow-xs" />
+        
+        <!-- Search -->
+        <input type="text" id="admin-order-search" placeholder="Search order ID / customer..."
+          class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 font-bold placeholder-slate-400 focus:outline-none focus:border-[#0C831F] w-44 sm:w-56 shadow-xs" />
+
+        <button onclick="AdminOrders.loadOrders(true)" class="p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-xs transition-colors" title="Refresh">
+          <svg class="w-4 h-4 text-[#0C831F]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <div id="order-status-tabs" class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xs">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-slate-100 text-slate-700 text-[11px] uppercase font-extrabold tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="py-3.5 px-4">Order ID & Date</th>
+              <th class="py-3.5 px-4">Customer</th>
+              <th class="py-3.5 px-4">Pickup Slot</th>
+              <th class="py-3.5 px-4">Amount</th>
+              <th class="py-3.5 px-4">Status</th>
+              <th class="py-3.5 px-4">Payment</th>
+              <th class="py-3.5 px-4 text-right">Workflow Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-tbody" class="divide-y divide-slate-100">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/admin/orders.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      AdminOrders.init();
+    });
+  </script>
+</body>
+</html>

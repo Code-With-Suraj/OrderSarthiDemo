@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Products — Admin OrderSarthi</title>
+  
+  <meta name="theme-color" content="#F8CB46">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <div id="admin-nav"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Product Catalog Management</h1>
+        <p class="text-xs sm:text-sm text-slate-500 font-medium">Add, edit pricing, update stock levels, and upload images</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Category Filter -->
+        <select id="filter-category-select" class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 font-bold focus:outline-none focus:border-[#0C831F] shadow-xs">
+          <option value="">All Categories</option>
+        </select>
+
+        <!-- Search -->
+        <input type="text" id="admin-prod-search" placeholder="Search product / SKU..."
+          class="px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 font-bold placeholder-slate-400 focus:outline-none focus:border-[#0C831F] w-44 shadow-xs" />
+
+        <button onclick="AdminProducts.openEditModal()" class="btn-primary text-xs font-extrabold !py-2.5 !px-4 shrink-0 shadow-xs">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+          <span>Add Product</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xs">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-slate-100 text-slate-700 text-[11px] uppercase font-extrabold tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="py-3.5 px-4">Product Info</th>
+              <th class="py-3.5 px-4">Unit</th>
+              <th class="py-3.5 px-4">Selling Price</th>
+              <th class="py-3.5 px-4">MRP</th>
+              <th class="py-3.5 px-4">Stock Status</th>
+              <th class="py-3.5 px-4">Status</th>
+              <th class="py-3.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-table-tbody" class="divide-y divide-slate-100">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Add / Edit Product Modal -->
+  <div id="product-form-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full border border-slate-200 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="AdminProducts.closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <h3 id="modal-title" class="text-xl font-extrabold text-slate-900 font-display mb-4">Add New Product</h3>
+
+      <form id="product-edit-form" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Product Title *</label>
+          <input type="text" id="prod-name" required placeholder="e.g. Aashirvaad Whole Wheat Atta 5kg"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Category *</label>
+            <select id="prod-category-select" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:outline-none focus:border-[#0C831F] focus:bg-white">
+              <!-- Injected via JS -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Unit Weight/Vol *</label>
+            <input type="text" id="prod-unit" required placeholder="e.g. 5 kg / 1 L"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Selling Price (₹) *</label>
+            <input type="number" id="prod-price" required min="0" step="0.5" placeholder="245"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">MRP (₹)</label>
+            <input type="number" id="prod-mrp" min="0" step="0.5" placeholder="275"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Stock Qty</label>
+            <input type="number" id="prod-stock" min="0" placeholder="50"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">SKU / Code</label>
+            <input type="text" id="prod-sku" placeholder="ATT-001"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Image URL</label>
+            <input type="url" id="prod-image-url" placeholder="https://..."
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Description</label>
+          <textarea id="prod-desc" rows="3" placeholder="Detailed product specifications..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white"></textarea>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2">
+          <button type="button" onclick="AdminProducts.closeModal()" class="btn-secondary font-bold">Cancel</button>
+          <button type="submit" id="save-prod-btn" class="btn-primary font-extrabold">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/admin/products.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      AdminProducts.init();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop Catalog — OrderSarthi</title>
+  <meta name="theme-color" content="#F8CB46">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icons/icon.svg">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <!-- Dynamic Site Header -->
+  <div id="site-header"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <!-- Search & Filter Bar -->
+    <div class="mb-6 space-y-4">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Store Catalog</h1>
+          <p class="text-xs sm:text-sm text-slate-500 font-medium">Select items for 10-minute store pickup</p>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative w-full sm:max-w-xs">
+          <input type="text" id="search-input" placeholder="Search products..."
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:ring-2 focus:ring-[#0C831F]/20 font-medium shadow-xs" />
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills (Scrollable on Mobile) -->
+      <div id="category-pills" class="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+        <!-- Injected via JavaScript -->
+        <div class="h-9 w-20 skeleton rounded-xl"></div>
+        <div class="h-9 w-28 skeleton rounded-xl"></div>
+        <div class="h-9 w-28 skeleton rounded-xl"></div>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- Load More Button -->
+    <div class="text-center mt-10">
+      <button id="load-more-btn" class="btn-secondary text-xs sm:text-sm !py-2.5 !px-6 hidden font-bold">
+        <span>Load More Products</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+      </button>
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <div id="site-footer"></div>
+
+  <!-- Scripts -->
+  <script src="./js/config.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/products.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      ProductsController.initShopPage();
+    });
+  </script>
+</body>
+</html>

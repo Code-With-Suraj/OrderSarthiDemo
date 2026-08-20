@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Pickup Basket — OrderSarthi</title>
+  
+  <meta name="theme-color" content="#F8CB46">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <div id="site-header"></div>
+
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Your Pickup Basket</h1>
+        <p class="text-xs sm:text-sm text-slate-500 font-medium">Review your items before selecting a pickup slot</p>
+      </div>
+      <button onclick="clearAll()" id="clear-cart-btn" class="text-xs text-rose-600 hover:text-rose-700 font-bold hidden">
+        Clear All
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- Cart Items List -->
+      <div class="lg:col-span-8 space-y-3.5" id="cart-items-container">
+        <!-- Injected via JavaScript -->
+      </div>
+
+      <!-- Cart Summary Card -->
+      <div class="lg:col-span-4">
+        <div class="bg-white border border-slate-200 rounded-3xl p-6 space-y-5 sticky top-24 shadow-xs">
+          <h3 class="text-base font-extrabold text-slate-900 font-display border-b border-slate-200 pb-3">Bill Details</h3>
+          
+          <div class="space-y-2.5 text-xs font-medium">
+            <div class="flex items-center justify-between text-slate-700">
+              <span>Items Subtotal:</span>
+              <span id="summary-subtotal" class="font-extrabold text-slate-900 font-display text-sm">₹0</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-600">
+              <span>Store Pickup Fee:</span>
+              <span class="text-[#0C831F] font-extrabold">FREE</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-600">
+              <span>Packaging Charge:</span>
+              <span class="text-[#0C831F] font-extrabold">FREE</span>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
+            <span class="font-extrabold text-slate-900 text-sm">To Pay:</span>
+            <span id="summary-total" class="text-xl font-extrabold text-[#0C831F] font-display">₹0</span>
+          </div>
+
+          <div class="space-y-2 pt-2">
+            <a href="./checkout.html" id="proceed-checkout-btn" class="btn-primary w-full text-sm font-extrabold !py-3">
+              <span>Proceed to Pickup Slot</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+            <a href="./shop.html" class="btn-secondary w-full text-xs !py-2.5 font-bold">
+              <span>Add More Items</span>
+            </a>
+          </div>
+
+          <p class="text-[11px] text-slate-500 text-center font-medium">
+            ⚡ 10-Minute store pickup slot confirmed at next step.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/auth.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      UI.renderHeader('cart');
+      UI.renderFooter();
+      UI.setPageTitle('Pickup Basket');
+      renderCart();
+
+      window.addEventListener('cart:updated', () => {
+        renderCart();
+      });
+    });
+
+    function renderCart() {
+      const container = document.getElementById('cart-items-container');
+      const clearBtn = document.getElementById('clear-cart-btn');
+      const proceedBtn = document.getElementById('proceed-checkout-btn');
+      const subtotalDisplay = document.getElementById('summary-subtotal');
+      const totalDisplay = document.getElementById('summary-total');
+
+      const items = Cart.getItems();
+      const subtotal = Cart.getSubtotal();
+
+      subtotalDisplay.textContent = Utils.formatCurrency(subtotal);
+      totalDisplay.textContent = Utils.formatCurrency(subtotal);
+
+      if (items.length === 0) {
+        clearBtn?.classList.add('hidden');
+        if (proceedBtn) proceedBtn.classList.add('opacity-40', 'pointer-events-none');
+
+        container.innerHTML = `
+          <div class="bg-white border border-slate-200 rounded-3xl p-12 text-center shadow-xs">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-900 font-display mb-1">Your Basket is Empty</h3>
+            <p class="text-xs text-slate-500 mb-6">Looks like you haven't added any items to your pickup basket yet.</p>
+            <a href="./shop.html" class="btn-primary text-xs font-extrabold">Explore Store Products</a>
+          </div>
+        `;
+        return;
+      }
+
+      clearBtn?.classList.remove('hidden');
+      if (proceedBtn) proceedBtn.classList.remove('opacity-40', 'pointer-events-none');
+
+      container.innerHTML = items.map(item => `
+        <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-4 shadow-xs">
+          <div class="flex items-center gap-3.5 flex-1 min-w-0">
+            <img src="${item.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=100'}" class="w-14 h-14 rounded-xl object-contain bg-slate-50 border border-slate-100 p-1 shrink-0" />
+            <div class="min-w-0">
+              <h4 class="font-extrabold text-xs sm:text-sm text-slate-900 truncate">${Utils.escapeHTML(item.product_name)}</h4>
+              <div class="text-[11px] text-slate-500 font-medium">${item.unit} • ${Utils.formatCurrency(item.selling_price)} each</div>
+              <div class="text-xs font-extrabold text-[#0C831F] font-display mt-0.5">${Utils.formatCurrency(item.selling_price * item.quantity)}</div>
+            </div>
+          </div>
+
+          <!-- Quantity Stepper -->
+          <div class="flex items-center gap-3 shrink-0">
+            <div class="flex items-center bg-emerald-50 border border-emerald-200 rounded-lg p-0.5">
+              <button onclick="Cart.updateQuantity('${item.product_id}', ${item.quantity - 1})" class="w-7 h-7 rounded bg-white hover:bg-emerald-100 text-[#0C831F] font-extrabold flex items-center justify-center text-xs shadow-xs">
+                –
+              </button>
+              <span class="w-8 text-center font-extrabold text-xs text-[#0C831F] font-mono">${item.quantity}</span>
+              <button onclick="Cart.updateQuantity('${item.product_id}', ${item.quantity + 1})" class="w-7 h-7 rounded bg-white hover:bg-emerald-100 text-[#0C831F] font-extrabold flex items-center justify-center text-xs shadow-xs">
+                +
+              </button>
+            </div>
+
+            <button onclick="Cart.removeItem('${item.product_id}')" class="text-slate-400 hover:text-rose-600 p-1.5 transition-colors" title="Remove item">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function clearAll() {
+      if (confirm('Are you sure you want to clear your cart?')) {
+        Cart.clear();
+      }
+    }
+  </script>
+</body>
+</html>

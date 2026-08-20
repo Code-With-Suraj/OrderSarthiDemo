@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Settings — Admin OrderSarthi</title>
+  
+  <meta name="theme-color" content="#F8CB46">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <div id="admin-nav"></div>
+
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Store Settings & Configuration</h1>
+      <p class="text-xs sm:text-sm text-slate-500 font-medium">Configure shop operating hours, contact profile, and database tools</p>
+    </div>
+
+    <!-- Store Profile & Hours Form -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+      <h3 class="text-base font-extrabold text-slate-900 font-display border-b border-slate-100 pb-3">Store Business Profile</h3>
+
+      <form id="shop-settings-form" class="space-y-4 text-xs">
+        
+        <!-- Shop Logo Upload & Live Preview -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center gap-4">
+          <div class="relative shrink-0">
+            <div id="shop-logo-preview" class="w-16 h-16 rounded-2xl bg-white border-2 border-dashed border-emerald-300 flex items-center justify-center text-[#0C831F] overflow-hidden shadow-xs">
+              <svg class="w-8 h-8 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </div>
+          </div>
+          <div class="flex-1 text-center sm:text-left space-y-1.5 w-full">
+            <div class="font-extrabold text-slate-900 text-xs">Shop Logo / Brand Icon</div>
+            <p class="text-[11px] text-slate-500 font-medium">Upload your store logo to display in the header, checkout, bills & QR standee.</p>
+            <div class="flex items-center gap-2 justify-center sm:justify-start pt-1">
+              <label class="px-3 py-1.5 rounded-xl bg-[#0C831F] hover:bg-[#096818] text-white font-extrabold cursor-pointer transition-colors inline-flex items-center gap-1.5 shadow-xs">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                <span>Upload Logo File</span>
+                <input type="file" id="shop-logo-file" accept="image/*" class="hidden" onchange="AdminSettings.handleLogoFile(event)" />
+              </label>
+              <input type="hidden" id="shop-logo-base64" />
+              <input type="url" id="shop-logo-url" placeholder="Or paste image URL"
+                class="flex-1 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F]" />
+              <button type="button" onclick="AdminSettings.clearLogo()" class="px-2.5 py-1.5 rounded-xl bg-slate-200 text-slate-700 hover:text-rose-600 font-bold text-xs">
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1.5">Shop / Business Name *</label>
+            <input type="text" id="shop-name" required
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1.5">Contact Phone / Mobile *</label>
+            <input type="tel" id="shop-phone" required
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white font-mono" />
+          </div>
+        </div>
+
+        <!-- WhatsApp Number for Order Notifications -->
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-[#0C831F]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            <label class="font-extrabold text-[#0C831F] text-xs">Owner WhatsApp Number (for Order Notifications)</label>
+          </div>
+          <input type="tel" id="shop-whatsapp" placeholder="10-digit WhatsApp number (e.g. 9876543210)" maxlength="10"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0C831F] font-mono text-sm font-bold" />
+          <p class="text-[11px] text-slate-500 font-medium">Customers will send order details to this WhatsApp number. If left blank, shop contact number will be used.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1.5">Store Email</label>
+            <input type="email" id="shop-email"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1.5">Opening Time (24h)</label>
+            <input type="time" id="shop-open-time"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1.5">Closing Time (24h)</label>
+            <input type="time" id="shop-close-time"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1.5">Physical Store Address (Shown on pickup receipts)</label>
+          <input type="text" id="shop-address"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1.5">Store Tagline / Description</label>
+          <textarea id="shop-desc" rows="2"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white"></textarea>
+        </div>
+
+        <!-- Payment & Gateway Settings Card -->
+        <div class="pt-4 border-t border-slate-100 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="text-sm font-extrabold text-slate-900 font-display">Payment & Checkout Settings</h4>
+              <p class="text-[11px] text-slate-500 font-medium">Decide whether your store accepts online payments via Razorpay, offline at pickup, or both.</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-100 text-[#0C831F] border border-emerald-200 flex items-center gap-1">
+              <svg class="w-3 h-3 text-[#0C831F]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+              <span>Razorpay Integrated</span>
+            </span>
+          </div>
+
+          <!-- Payment Mode Radio Selector -->
+          <div class="space-y-2">
+            <label class="block font-bold text-slate-700">Customer Payment Acceptance Mode *</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <!-- Option 1: Both -->
+              <label class="payment-mode-card relative flex flex-col p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:border-[#0C831F] transition-all has-[:checked]:border-[#0C831F] has-[:checked]:bg-emerald-50/40 has-[:checked]:ring-1 has-[:checked]:ring-emerald-500">
+                <div class="flex items-center justify-between mb-1.5">
+                  <input type="radio" name="payment_mode" value="BOTH" id="mode-both" checked class="w-4 h-4 text-[#0C831F] bg-white border-slate-300" />
+                  <span class="text-[10px] font-extrabold px-2 py-0.2 rounded-full bg-emerald-100 text-[#0C831F] border border-emerald-200">Recommended</span>
+                </div>
+                <span class="font-extrabold text-slate-900 text-xs">Both Online & Offline</span>
+                <span class="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">Customers can choose Razorpay (UPI/Cards) or Pay at Store Pickup.</span>
+              </label>
+
+              <!-- Option 2: Online Only -->
+              <label class="payment-mode-card relative flex flex-col p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:border-[#0C831F] transition-all has-[:checked]:border-[#0C831F] has-[:checked]:bg-emerald-50/40 has-[:checked]:ring-1 has-[:checked]:ring-emerald-500">
+                <div class="flex items-center justify-between mb-1.5">
+                  <input type="radio" name="payment_mode" value="ONLINE_ONLY" id="mode-online" class="w-4 h-4 text-[#0C831F] bg-white border-slate-300" />
+                  <span class="text-[10px] font-extrabold px-2 py-0.2 rounded-full bg-blue-100 text-blue-700 border border-blue-200">Prepaid Only</span>
+                </div>
+                <span class="font-extrabold text-slate-900 text-xs">Online Payment Only</span>
+                <span class="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">All orders require 100% online payment via Razorpay prior to pickup.</span>
+              </label>
+
+              <!-- Option 3: Offline Only -->
+              <label class="payment-mode-card relative flex flex-col p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:border-[#0C831F] transition-all has-[:checked]:border-[#0C831F] has-[:checked]:bg-emerald-50/40 has-[:checked]:ring-1 has-[:checked]:ring-emerald-500">
+                <div class="flex items-center justify-between mb-1.5">
+                  <input type="radio" name="payment_mode" value="OFFLINE_ONLY" id="mode-offline" class="w-4 h-4 text-[#0C831F] bg-white border-slate-300" />
+                  <span class="text-[10px] font-extrabold px-2 py-0.2 rounded-full bg-amber-100 text-amber-800 border border-amber-200">Store Counter</span>
+                </div>
+                <span class="font-extrabold text-slate-900 text-xs">Pay at Pickup Only</span>
+                <span class="text-[11px] text-slate-500 font-medium mt-0.5 leading-snug">Customer pays Cash or Shop UPI scanner at the store counter upon arrival.</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Razorpay API Credentials -->
+          <div id="razorpay-config-block" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#0C831F]"></span>
+                <span class="font-extrabold text-slate-900 text-xs">Razorpay Gateway Credentials</span>
+              </div>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="razorpay-enabled" checked class="w-4 h-4 rounded text-[#0C831F] bg-white border-slate-300" />
+                <span class="text-[11px] text-slate-700 font-bold">Enable Razorpay</span>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Razorpay Key ID</label>
+                <input type="text" id="razorpay-key-id" placeholder="rzp_live_... or rzp_test_..."
+                  class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-xs placeholder-slate-400 focus:outline-none focus:border-[#0C831F]" />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Razorpay Key Secret</label>
+                <div class="relative">
+                  <input type="password" id="razorpay-key-secret" placeholder="Enter key secret"
+                    class="w-full px-3 py-2 pr-9 rounded-xl bg-white border border-slate-200 text-slate-900 font-mono text-xs placeholder-slate-400 focus:outline-none focus:border-[#0C831F]" />
+                  <button type="button" onclick="toggleSecretVisibility()" class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-700" title="Toggle visibility">
+                    <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <p class="text-[11px] text-slate-500 font-medium">Supports UPI (GPay, PhonePe, Paytm), Debit/Credit Cards, NetBanking, and Wallets via Razorpay standard popup.</p>
+          </div>
+        </div>
+
+        <div class="pt-3">
+          <button type="submit" id="save-settings-btn" class="btn-primary text-xs font-extrabold !py-2.5 !px-6 shadow-xs">
+            <span>Save Store & Payment Settings</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Store QR Standee / Poster Generator Card -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 font-display flex items-center gap-2">
+            <span>In-Store QR Ordering Standee</span>
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-[#0C831F] border border-emerald-200">Customer Scan</span>
+          </h3>
+          <p class="text-xs text-slate-500 font-medium mt-1">Place this QR poster at your shop counter, entrance, or dining tables for customers to scan and order from their phones.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="printQrStandee()" class="btn-primary text-xs font-extrabold !py-2 !px-4 flex items-center gap-1.5 shadow-xs">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            <span>Print Counter Standee</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+        <!-- Standee Preview Box -->
+        <div class="md:col-span-5 flex justify-center">
+          <div id="qr-standee-card" class="bg-gradient-to-b from-slate-900 to-slate-950 p-6 rounded-3xl border-2 border-emerald-500/40 text-center space-y-3 shadow-2xl max-w-xs w-full">
+            <div class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-[#0C831F] text-white font-black text-sm shadow-md">
+              <span id="standee-initial">S</span>
+            </div>
+            <div>
+              <h4 id="standee-shop-name" class="font-extrabold text-white text-base font-display">OrderSarthi Shop</h4>
+              <p class="text-[10px] text-emerald-300 font-extrabold tracking-wider uppercase">Scan to Order & Skip Queue</p>
+            </div>
+
+            <div class="p-3 bg-white rounded-2xl inline-block shadow-inner mx-auto">
+              <img id="settings-qr-img" src="" alt="Store QR Code" class="w-40 h-40 object-contain mx-auto">
+            </div>
+
+            <div class="space-y-1">
+              <div class="text-[11px] font-black text-emerald-400">⚡ Instant Counter Pickup</div>
+              <p class="text-[9px] text-slate-400">Browse Menu • Add Items • Instant Billing</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standee Controls & URL -->
+        <div class="md:col-span-7 space-y-4 text-xs">
+          <div class="space-y-1.5">
+            <label class="block font-bold text-slate-700">Store Direct QR Link</label>
+            <div class="flex items-center gap-2">
+              <input type="text" id="store-qr-url" readonly
+                class="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-mono text-[11px] select-all focus:outline-none" />
+              <button onclick="copyStoreQrUrl()" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold transition-colors">
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <h5 class="font-extrabold text-slate-900 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#0C831F]"></span>
+              <span>How In-Store QR Ordering Works:</span>
+            </h5>
+            <ol class="list-decimal list-inside space-y-1 text-slate-600 font-medium">
+              <li>Customer enters your shop & scans the QR with any phone camera.</li>
+              <li>Your store catalog opens instantly in <strong>In-Store Shopping Mode</strong>.</li>
+              <li>Customer selects items and places the order for instant counter pickup.</li>
+              <li>If the customer does not have a smartphone, open <strong>⚡ POS Billing</strong> to create the order for them and deduct stock instantly.</li>
+            </ol>
+          </div>
+
+          <div class="flex items-center gap-3 pt-1">
+            <a id="download-qr-btn" href="#" download="Store_QR_Code.png" class="btn-secondary text-xs font-bold !py-2 !px-4">
+              Download QR Image
+            </a>
+            <a href="./pos.html" class="inline-flex items-center gap-1.5 text-xs text-[#0C831F] hover:underline font-extrabold ml-auto">
+              <span>Go to POS Counter Billing →</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Schema Setup Utility -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-4">
+      <h3 class="text-base font-extrabold text-slate-900 font-display border-b border-slate-100 pb-3">Database Maintenance Tools</h3>
+      <p class="text-xs text-slate-500 font-medium">
+        If you have created a new blank Google Spreadsheet, use this tool to automatically create all 11 required sheet tabs, column headers, and seed sample product catalog.
+      </p>
+      <div>
+        <button onclick="initDatabaseFromAdmin()" id="init-db-btn" class="btn-secondary text-xs font-extrabold !py-2.5 !px-5">
+          <svg class="w-4 h-4 text-[#0C831F]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s-8-1.79-8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+          <span>Initialize / Re-sync Database Tabs</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/admin/settings.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      AdminSettings.init();
+    });
+
+    function toggleSecretVisibility() {
+      const input = document.getElementById('razorpay-key-secret');
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+      } else {
+        input.type = 'password';
+      }
+    }
+
+    async function initDatabaseFromAdmin() {
+      if (!confirm('This will ensure all 11 sheet tabs and sample products are created in your Google Spreadsheet. Continue?')) return;
+      const btn = document.getElementById('init-db-btn');
+      btn.disabled = true;
+
+      try {
+        const res = await api.post('initializeDatabase', {}, true);
+        Utils.showToast(res.message || 'Database schema initialized!', 'success');
+      } catch(e) {
+        Utils.showToast(e.message || 'Failed to initialize database.', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

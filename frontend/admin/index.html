@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal Login — OrderSarthi</title>
+  
+  <meta name="theme-color" content="#F8CB46">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <main class="flex-1 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-8 sm:p-10 max-w-md w-full border border-slate-200 shadow-xl space-y-6">
+      
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-[#F8CB46] flex items-center justify-center text-slate-900 font-extrabold text-lg mx-auto shadow-xs font-display">
+          OS
+        </div>
+        <h1 class="text-2xl font-extrabold text-slate-900 font-display">Store Administration</h1>
+        <p class="text-xs text-slate-500 font-medium">Secure owner terminal for OrderSarthi click & collect</p>
+      </div>
+
+      <form id="admin-login-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Admin Username / Mobile</label>
+          <input type="text" id="admin-username" required placeholder="admin"
+            class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Password</label>
+          <input type="password" id="admin-password" required placeholder="••••••••"
+            class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        </div>
+
+        <button type="submit" id="admin-submit-btn" class="btn-primary w-full text-sm font-extrabold !py-3 shadow-xs">
+          <span>Login to Store Admin</span>
+        </button>
+      </form>
+
+      <div class="pt-4 border-t border-slate-100 text-center text-xs text-slate-500 font-medium">
+        <a href="../index.html" class="hover:text-slate-900 font-bold">← Back to Customer Storefront</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // If already logged in, redirect directly to dashboard
+      if (Auth.isAdminLoggedIn()) {
+        window.location.href = './dashboard.html';
+        return;
+      }
+
+      const form = document.getElementById('admin-login-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('admin-submit-btn');
+        btn.disabled = true;
+        btn.textContent = 'Verifying Admin...';
+
+        const u = document.getElementById('admin-username').value;
+        const p = document.getElementById('admin-password').value;
+
+        try {
+          await Auth.loginAdmin(u, p);
+          Utils.showToast('Welcome back, Store Admin!', 'success');
+          setTimeout(() => window.location.href = './dashboard.html', 500);
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'Login to Store Admin';
+          Utils.showToast(err.message || 'Invalid admin credentials.', 'error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

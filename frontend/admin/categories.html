@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Categories — Admin OrderSarthi</title>
+  
+  <meta name="theme-color" content="#F8CB46">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <div id="admin-nav"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Category Management</h1>
+        <p class="text-xs sm:text-sm text-slate-500 font-medium">Organize store catalog aisles and product groups</p>
+      </div>
+
+      <button onclick="AdminCategories.openEditModal()" class="btn-primary text-xs font-extrabold !py-2.5 !px-4 shadow-xs">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+        <span>Add Category</span>
+      </button>
+    </div>
+
+    <!-- Categories Table -->
+    <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xs">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-slate-100 text-slate-700 text-[11px] uppercase font-extrabold tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="py-3.5 px-4">Category Name</th>
+              <th class="py-3.5 px-4">Description</th>
+              <th class="py-3.5 px-4">Sort Order</th>
+              <th class="py-3.5 px-4">Status</th>
+              <th class="py-3.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="categories-table-tbody" class="divide-y divide-slate-100">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Add / Edit Category Modal -->
+  <div id="category-form-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-200 shadow-2xl relative">
+      <button onclick="AdminCategories.closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <h3 id="cat-modal-title" class="text-xl font-extrabold text-slate-900 font-display mb-4">Add Category</h3>
+
+      <form id="category-edit-form" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Category Name *</label>
+          <input type="text" id="cat-name" required placeholder="e.g. Daily Groceries"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Image URL</label>
+          <input type="url" id="cat-image-url" placeholder="https://..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Sort Order</label>
+          <input type="number" id="cat-order" value="1" min="1"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Short Description</label>
+          <textarea id="cat-desc" rows="2" placeholder="Brief category summary..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white"></textarea>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2">
+          <button type="button" onclick="AdminCategories.closeModal()" class="btn-secondary font-bold">Cancel</button>
+          <button type="submit" id="save-cat-btn" class="btn-primary font-extrabold">Save Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/admin/categories.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      AdminCategories.init();
+    });
+  </script>
+</body>
+</html>

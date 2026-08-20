@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Directory — Admin OrderSarthi</title>
+  
+  <meta name="theme-color" content="#F8CB46">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <div id="admin-nav"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Customer Directory</h1>
+        <p class="text-xs sm:text-sm text-slate-500 font-medium">View registered customers and total orders history</p>
+      </div>
+
+      <input type="text" id="customer-search-input" placeholder="Search customer / mobile..."
+        class="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] shadow-xs w-full sm:w-64" />
+    </div>
+
+    <!-- Customers Table -->
+    <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xs">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-slate-100 text-slate-700 text-[11px] uppercase font-extrabold tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="py-3.5 px-4">Customer Name</th>
+              <th class="py-3.5 px-4">Mobile Number</th>
+              <th class="py-3.5 px-4">Email</th>
+              <th class="py-3.5 px-4">Total Orders</th>
+              <th class="py-3.5 px-4">Registered Date</th>
+              <th class="py-3.5 px-4 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody id="customers-table-tbody" class="divide-y divide-slate-100">
+            <!-- Injected via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script>
+    let customersList = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      Auth.requireAdmin();
+      UI.renderAdminNav('customers');
+
+      await loadCustomers();
+
+      document.getElementById('customer-search-input')?.addEventListener('input', Utils.debounce((e) => {
+        const q = e.target.value.toLowerCase().trim();
+        const filtered = customersList.filter(c => (c.name || '').toLowerCase().includes(q) || (c.mobile || '').includes(q));
+        renderTable(filtered);
+      }, 200));
+    });
+
+    async function loadCustomers() {
+      const tbody = document.getElementById('customers-table-tbody');
+      if (tbody) {
+        tbody.innerHTML = [1, 2, 3, 4, 5].map(() => `
+          <tr class="text-xs">
+            <td class="py-4 px-4"><div class="h-4 w-28 skeleton"></div></td>
+            <td class="py-4 px-4"><div class="h-4 w-24 skeleton"></div></td>
+            <td class="py-4 px-4"><div class="h-4 w-32 skeleton"></div></td>
+            <td class="py-4 px-4"><div class="h-4 w-16 skeleton"></div></td>
+            <td class="py-4 px-4"><div class="h-4 w-20 skeleton"></div></td>
+            <td class="py-4 px-4 text-right"><div class="h-5 w-16 skeleton rounded-full ml-auto"></div></td>
+          </tr>
+        `).join('');
+      }
+
+      try {
+        const res = await api.get('adminCustomers', {}, true);
+        customersList = res.customers || [];
+        renderTable(customersList);
+      } catch (err) {
+        Utils.showToast('Failed to load customers: ' + err.message, 'error');
+      }
+    }
+
+    function renderTable(list) {
+      const tbody = document.getElementById('customers-table-tbody');
+      if (!tbody) return;
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-medium text-xs">No customer accounts found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(c => `
+        <tr class="hover:bg-slate-50 transition-colors text-xs">
+          <td class="py-3.5 px-4 font-extrabold text-slate-900">${Utils.escapeHTML(c.name)}</td>
+          <td class="py-3.5 px-4 font-mono font-medium text-slate-600">${c.mobile}</td>
+          <td class="py-3.5 px-4 text-slate-500 font-medium">${c.email || '—'}</td>
+          <td class="py-3.5 px-4 font-extrabold text-[#0C831F] font-mono">${c.total_orders} Orders</td>
+          <td class="py-3.5 px-4 text-slate-500 font-medium">${Utils.formatDate(c.created_at, false)}</td>
+          <td class="py-3.5 px-4 text-right">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${c.is_active ? 'bg-emerald-100 text-[#0C831F] border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}">
+              ${c.is_active ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

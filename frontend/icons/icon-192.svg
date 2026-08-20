@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bgGrad192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#4338ca" />
+      <stop offset="100%" stop-color="#090d16" />
+    </linearGradient>
+    <linearGradient id="bagGrad192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e0e7ff" />
+    </linearGradient>
+    <linearGradient id="boltGrad192" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+
+  <rect width="192" height="192" rx="48" fill="url(#bgGrad192)"/>
+  <rect x="4" y="4" width="184" height="184" rx="44" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+
+  <g transform="translate(39, 36)">
+    <path d="M28 52 C28 22, 86 22, 86 52" fill="none" stroke="url(#bagGrad192)" stroke-width="11" stroke-linecap="round"/>
+    <path d="M8 48 L106 48 L99 120 C98 126, 93 130, 87 130 L27 130 C21 130, 16 126, 15 120 Z" fill="url(#bagGrad192)" />
+    <path d="M63 64 L44 94 L55 94 L51 118 L70 88 L59 88 Z" fill="url(#boltGrad192)"/>
+  </g>
+</svg>

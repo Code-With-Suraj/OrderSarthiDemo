@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — OrderSarthi</title>
+  
+  <meta name="theme-color" content="#F8CB46">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="apple-touch-icon" href="../icons/icon.svg">
+  <link rel="icon" type="image/svg+xml" href="../icons/icon.svg">
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="bg-[#F4F6FB] text-slate-900 flex flex-col min-h-screen">
+  <!-- Dynamic Admin Navigation -->
+  <div id="admin-nav"></div>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Header Title & Action Buttons -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Store Performance Dashboard</h1>
+        <p class="text-xs sm:text-sm text-slate-500 font-medium">Live order processing and sales metrics for today</p>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <a href="./pos.html" class="py-2.5 px-4 rounded-xl bg-[#0C831F] hover:bg-[#096818] text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span>⚡ POS Billing</span>
+        </a>
+        <button onclick="AdminDashboard.loadStats()" class="p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-2 transition-colors shadow-xs">
+          <svg class="w-4 h-4 text-[#0C831F]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <span>Refresh</span>
+        </button>
+        <a href="./orders.html" class="btn-primary text-xs font-extrabold !py-2.5 !px-4">
+          <span>Manage Orders</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
+      
+      <!-- Today's Sales -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+        <div class="text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider">Today's Sales</div>
+        <div id="metric-today-sales" class="text-xl sm:text-2xl font-extrabold text-slate-900 font-display mt-1">₹0</div>
+        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Completed pickups</div>
+      </div>
+
+      <!-- Total Orders -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+        <div class="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">Total Orders</div>
+        <div id="metric-today-orders" class="text-xl sm:text-2xl font-extrabold text-slate-900 font-display mt-1">0</div>
+        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Received today</div>
+      </div>
+
+      <!-- Pending -->
+      <div class="bg-white rounded-2xl p-4 border border-blue-200 shadow-xs">
+        <div class="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider">Pending / New</div>
+        <div id="metric-pending-orders" class="text-xl sm:text-2xl font-extrabold text-blue-900 font-display mt-1">0</div>
+        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Needs action</div>
+      </div>
+
+      <!-- Preparing -->
+      <div class="bg-white rounded-2xl p-4 border border-amber-200 shadow-xs">
+        <div class="text-[11px] font-extrabold text-amber-700 uppercase tracking-wider">In Packing</div>
+        <div id="metric-preparing-orders" class="text-xl sm:text-2xl font-extrabold text-amber-900 font-display mt-1">0</div>
+        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Staff preparing</div>
+      </div>
+
+      <!-- Ready for Pickup -->
+      <div class="bg-white rounded-2xl p-4 border border-emerald-200 shadow-xs">
+        <div class="text-[11px] font-extrabold text-[#0C831F] uppercase tracking-wider">Ready at Store</div>
+        <div id="metric-ready-orders" class="text-xl sm:text-2xl font-extrabold text-emerald-900 font-display mt-1">0</div>
+        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Awaiting customer</div>
+      </div>
+
+      <!-- Picked Up -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+        <div class="text-[11px] font-extrabold text-teal-700 uppercase tracking-wider">Completed</div>
+        <div id="metric-completed-orders" class="text-xl sm:text-2xl font-extrabold text-slate-900 font-display mt-1">0</div>
+        <div class="text-[10px] text-slate-500 font-medium mt-0.5">Handed over</div>
+      </div>
+
+    </div>
+
+    <!-- Main Content Area: Recent Orders & Stock Warnings -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Recent Orders Table -->
+      <div class="lg:col-span-8 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900 font-display">Recent Today's Orders</h3>
+          <a href="./orders.html" class="text-xs text-[#0C831F] hover:underline font-extrabold">View All Orders →</a>
+        </div>
+
+        <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xs">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-slate-100 text-slate-700 text-[11px] uppercase font-extrabold tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="py-3.5 px-4">Order ID</th>
+                  <th class="py-3.5 px-4">Customer</th>
+                  <th class="py-3.5 px-4">Amount</th>
+                  <th class="py-3.5 px-4">Slot</th>
+                  <th class="py-3.5 px-4">Status</th>
+                  <th class="py-3.5 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="recent-orders-tbody" class="divide-y divide-slate-100">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Low Stock Alerts Sidebar -->
+      <div class="lg:col-span-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900 font-display">Stock Level Alerts</h3>
+          <a href="./products.html" class="text-xs text-[#0C831F] hover:underline font-extrabold">Manage Stock →</a>
+        </div>
+
+        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs">
+          <div id="low-stock-container" class="space-y-1">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/admin/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      AdminDashboard.init();
+    });
+  </script>
+</body>
+</html>
