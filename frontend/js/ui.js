@@ -342,9 +342,10 @@ const UI = {
 
     this.initPwaHead();
     const admin = Auth.getAdmin();
-    const isInsideAdmin = window.location.pathname.includes('/admin/');
-    const adminPrefix = isInsideAdmin ? './' : './admin/';
-    const storePrefix = isInsideAdmin ? '../' : './';
+    const p = window.location.pathname;
+    const isInsideAdmin = p.includes('/admin/') || p.endsWith('/admin');
+    const adminPrefix = isInsideAdmin ? (p.endsWith('/admin') ? './admin/' : './') : './admin/';
+    const storePrefix = isInsideAdmin ? (p.endsWith('/admin') ? './' : '../') : './';
     const shop = CONFIG.getShopInfo();
     const shopName = shop.shop_name || CONFIG.DEFAULT_SHOP_NAME;
     const logoUrl = shop.logo_url || '';

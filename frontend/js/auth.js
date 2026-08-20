@@ -8,7 +8,8 @@ const Auth = {
    * Get relative path prefix
    */
   getPathPrefix() {
-    const isInsideAdmin = window.location.pathname.includes('/admin/');
+    const p = window.location.pathname;
+    const isInsideAdmin = p.includes('/admin/') || p.endsWith('/admin');
     return isInsideAdmin ? '../' : './';
   },
 
@@ -159,8 +160,9 @@ const Auth = {
    * Admin logout
    */
   async logoutAdmin() {
-    const isInsideAdmin = window.location.pathname.includes('/admin/');
-    const adminLoginUrl = isInsideAdmin ? './index.html' : './admin/index.html';
+    const p = window.location.pathname;
+    const isInsideAdmin = p.includes('/admin/') || p.endsWith('/admin');
+    const adminLoginUrl = isInsideAdmin ? (p.endsWith('/admin') ? './admin/index.html' : './index.html') : './admin/index.html';
     try {
       const token = localStorage.getItem(CONFIG.STORAGE_KEYS.ADMIN_TOKEN);
       if (token) {
@@ -191,8 +193,9 @@ const Auth = {
    */
   requireAdmin(redirectUrl = 'index.html') {
     if (!this.isAdminLoggedIn()) {
-      const isInsideAdmin = window.location.pathname.includes('/admin/');
-      const target = isInsideAdmin ? `./${redirectUrl}` : `./admin/${redirectUrl}`;
+      const p = window.location.pathname;
+      const isInsideAdmin = p.includes('/admin/') || p.endsWith('/admin');
+      const target = isInsideAdmin ? (p.endsWith('/admin') ? `./admin/${redirectUrl}` : `./${redirectUrl}`) : `./admin/${redirectUrl}`;
       window.location.href = target;
     }
   }

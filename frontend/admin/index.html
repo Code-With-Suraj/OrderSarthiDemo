@@ -54,9 +54,18 @@
   <script src="../js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      function navigateToDashboard() {
+        const p = window.location.pathname;
+        if (p.endsWith('/admin')) {
+          window.location.href = './admin/dashboard.html';
+        } else {
+          window.location.href = './dashboard.html';
+        }
+      }
+
       // If already logged in, redirect directly to dashboard
       if (Auth.isAdminLoggedIn()) {
-        window.location.href = './dashboard.html';
+        navigateToDashboard();
         return;
       }
 
@@ -73,7 +82,7 @@
         try {
           await Auth.loginAdmin(u, p);
           Utils.showToast('Welcome back, Store Admin!', 'success');
-          setTimeout(() => window.location.href = './dashboard.html', 500);
+          setTimeout(() => navigateToDashboard(), 400);
         } catch (err) {
           btn.disabled = false;
           btn.textContent = 'Login to Store Admin';
