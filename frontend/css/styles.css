@@ -199,3 +199,25 @@ h1, h2, h3, h4, .font-display {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Product Rich Description Typography */
+.product-rich-description {
+  line-height: 1.6;
+}
+
+.product-rich-description h2,
+.product-rich-description h3,
+.product-rich-description h4,
+.product-rich-description h5 {
+  font-family: var(--font-display);
+}
+
+.product-rich-description ul li,
+.product-rich-description ol li {
+  line-height: 1.5;
+}
+
+.product-rich-description p:last-child {
+  margin-bottom: 0;
+}
+

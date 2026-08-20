@@ -220,6 +220,169 @@ const Utils = {
   },
 
   /**
+   * Safe Rich Text & Markdown Parser for Product Descriptions
+   * Converts Markdown (headings, bullets, bold, lists, quotes) or plain text into semantic styled HTML.
+   * @param {string} rawText
+   * @returns {string} Safe HTML string
+   */
+  renderRichText(rawText) {
+    if (!rawText || !String(rawText).trim()) {
+      return '<p class="text-xs sm:text-sm text-slate-500 font-medium italic">No detailed description provided for this product.</p>';
+    }
+
+    const text = String(rawText).trim();
+    // Normalize newlines
+    const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const lines = normalized.split('\n');
+
+    let html = '';
+    let inUl = false;
+    let inOl = false;
+    let paragraphBuffer = [];
+
+    const flushParagraph = () => {
+      if (paragraphBuffer.length > 0) {
+        const pContent = paragraphBuffer.map(l => this.renderInlineMarkdown(l)).join('<br/>');
+        html += `<p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium mb-2.5">${pContent}</p>`;
+        paragraphBuffer = [];
+      }
+    };
+
+    const closeLists = () => {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const rawLine = lines[i];
+      const trimmed = rawLine.trim();
+
+      // Blank line
+      if (!trimmed) {
+        flushParagraph();
+        closeLists();
+        continue;
+      }
+
+      // Divider (--- or ***)
+      if (/^(\-{3,}|\*{3,}|_{3,})$/.test(trimmed)) {
+        flushParagraph();
+        closeLists();
+        html += '<hr class="my-3.5 border-slate-200" />';
+        continue;
+      }
+
+      // Headings (#, ##, ###, ####)
+      const h4Match = trimmed.match(/^####\s+(.+)$/);
+      if (h4Match) {
+        flushParagraph();
+        closeLists();
+        html += `<h5 class="text-xs font-extrabold text-slate-800 uppercase tracking-wide mt-3 mb-1 font-display">${this.renderInlineMarkdown(h4Match[1])}</h5>`;
+        continue;
+      }
+
+      const h3Match = trimmed.match(/^###\s+(.+)$/);
+      if (h3Match) {
+        flushParagraph();
+        closeLists();
+        html += `<h4 class="text-xs sm:text-sm font-extrabold text-slate-900 font-display mt-3.5 mb-1.5 flex items-center gap-1.5"><span class="w-1.5 h-3.5 bg-[#0C831F] rounded-full inline-block"></span><span>${this.renderInlineMarkdown(h3Match[1])}</span></h4>`;
+        continue;
+      }
+
+      const h2Match = trimmed.match(/^##\s+(.+)$/);
+      if (h2Match) {
+        flushParagraph();
+        closeLists();
+        html += `<h3 class="text-sm sm:text-base font-extrabold text-slate-900 font-display mt-4 mb-2 pb-1 border-b border-slate-100 flex items-center gap-2">${this.renderInlineMarkdown(h2Match[1])}</h3>`;
+        continue;
+      }
+
+      const h1Match = trimmed.match(/^#\s+(.+)$/);
+      if (h1Match) {
+        flushParagraph();
+        closeLists();
+        html += `<h2 class="text-base sm:text-lg font-black text-slate-900 font-display mt-4 mb-2 pb-1.5 border-b border-slate-200">${this.renderInlineMarkdown(h1Match[1])}</h2>`;
+        continue;
+      }
+
+      // Blockquotes (> Quote)
+      const bqMatch = trimmed.match(/^>\s+(.+)$/);
+      if (bqMatch) {
+        flushParagraph();
+        closeLists();
+        html += `<div class="my-2.5 p-3 rounded-2xl bg-amber-50 border-l-4 border-amber-500 text-amber-900 text-xs font-medium leading-relaxed">${this.renderInlineMarkdown(bqMatch[1])}</div>`;
+        continue;
+      }
+
+      // Bullet List (- Item, * Item, • Item)
+      const bulletMatch = trimmed.match(/^[-*•]\s+(.+)$/);
+      if (bulletMatch) {
+        flushParagraph();
+        if (inOl) { html += '</ol>'; inOl = false; }
+        if (!inUl) { html += '<ul class="space-y-1.5 my-2.5">'; inUl = true; }
+        html += `<li class="flex items-start gap-2 text-xs sm:text-sm text-slate-700 leading-relaxed"><span class="w-1.5 h-1.5 rounded-full bg-[#0C831F] mt-1.5 shrink-0"></span><span>${this.renderInlineMarkdown(bulletMatch[1])}</span></li>`;
+        continue;
+      }
+
+      // Numbered List (1. Item, 2. Item)
+      const numMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
+      if (numMatch) {
+        flushParagraph();
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (!inOl) { html += '<ol class="space-y-1.5 my-2.5 list-decimal list-inside text-xs sm:text-sm text-slate-700 leading-relaxed">'; inOl = true; }
+        html += `<li><span>${this.renderInlineMarkdown(numMatch[2])}</span></li>`;
+        continue;
+      }
+
+      // Key-Value Feature Spec line (e.g. "Brand: Nestle", "Shelf Life: 6 Months")
+      const kvMatch = trimmed.match(/^([A-Za-z0-9\s\-_/&]+):\s+(.+)$/);
+      if (kvMatch && !trimmed.startsWith('http') && kvMatch[1].length < 30) {
+        flushParagraph();
+        closeLists();
+        html += `
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium mr-2 mb-2 shadow-2xs">
+            <span class="font-extrabold text-slate-900">${this.escapeHTML(kvMatch[1])}:</span>
+            <span class="text-slate-600">${this.renderInlineMarkdown(kvMatch[2])}</span>
+          </div>
+        `;
+        continue;
+      }
+
+      // Regular paragraph line
+      closeLists();
+      paragraphBuffer.push(trimmed);
+    }
+
+    flushParagraph();
+    closeLists();
+
+    return html;
+  },
+
+  /**
+   * Inline Markdown styling (Bold, Italic, Code badges, Links)
+   * @param {string} text
+   * @returns {string}
+   */
+  renderInlineMarkdown(text) {
+    if (!text) return '';
+    let escaped = this.escapeHTML(text);
+
+    // Bold (**text** or __text__)
+    escaped = escaped.replace(/\*\*(.+?)\*\*/g, '<strong class="font-black text-slate-900">$1</strong>');
+    escaped = escaped.replace(/__(.+?)__/g, '<strong class="font-black text-slate-900">$1</strong>');
+
+    // Italic (*text* or _text_)
+    escaped = escaped.replace(/\*(.+?)\*/g, '<em class="italic text-slate-800">$1</em>');
+    escaped = escaped.replace(/_(.+?)_/g, '<em class="italic text-slate-800">$1</em>');
+
+    // Code / Tag badge (`badge`)
+    escaped = escaped.replace(/`(.+?)`/g, '<span class="inline-block px-1.5 py-0.2 rounded bg-slate-100 border border-slate-200 text-slate-800 font-mono text-[11px] font-bold">$1</span>');
+
+    return escaped;
+  },
+
+  /**
    * Order Status configuration maps (Badge colors, user-friendly labels, icons)
    */
   ORDER_STATUS_MAP: {
@@ -264,3 +427,4 @@ const Utils = {
 // Freeze Utils
 Object.freeze(Utils);
 Object.freeze(Utils.ORDER_STATUS_MAP);
+

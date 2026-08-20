@@ -215,11 +215,116 @@ const AdminProducts = {
     document.getElementById('prod-image-url').value = p.image_url || '';
     document.getElementById('prod-desc').value = p.description || '';
 
+    this.setDescTab('write');
+    this.updateLivePreview();
+
     modal.classList.remove('hidden');
   },
 
   closeModal() {
     document.getElementById('product-form-modal')?.classList.add('hidden');
+  },
+
+  /**
+   * Toggle between Write tab and Live Preview tab for description
+   * @param {'write'|'preview'} tab
+   */
+  setDescTab(tab) {
+    const writeContainer = document.getElementById('desc-write-container');
+    const previewContainer = document.getElementById('desc-preview-container');
+    const toolbar = document.getElementById('desc-toolbar');
+    const tabWriteBtn = document.getElementById('desc-tab-write');
+    const tabPrevBtn = document.getElementById('desc-tab-preview');
+
+    if (tab === 'preview') {
+      if (writeContainer) writeContainer.classList.add('hidden');
+      if (toolbar) toolbar.classList.add('hidden');
+      if (previewContainer) previewContainer.classList.remove('hidden');
+      if (tabWriteBtn) {
+        tabWriteBtn.className = 'px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-900 transition-all font-medium';
+      }
+      if (tabPrevBtn) {
+        tabPrevBtn.className = 'px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs font-extrabold transition-all';
+      }
+      this.updateLivePreview();
+    } else {
+      if (writeContainer) writeContainer.classList.remove('hidden');
+      if (toolbar) toolbar.classList.remove('hidden');
+      if (previewContainer) previewContainer.classList.add('hidden');
+      if (tabWriteBtn) {
+        tabWriteBtn.className = 'px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs font-extrabold transition-all';
+      }
+      if (tabPrevBtn) {
+        tabPrevBtn.className = 'px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-900 transition-all font-medium';
+      }
+    }
+  },
+
+  /**
+   * Update the live formatted preview of product description
+   */
+  updateLivePreview() {
+    const textarea = document.getElementById('prod-desc');
+    const output = document.getElementById('desc-preview-output');
+    if (!textarea || !output) return;
+
+    const val = textarea.value.trim();
+    if (!val) {
+      output.innerHTML = '<p class="text-slate-400 italic text-center py-4">Live preview will appear here as you type...</p>';
+      return;
+    }
+
+    output.innerHTML = Utils.renderRichText(val);
+  },
+
+  /**
+   * Insert Markdown snippets into description textarea at cursor
+   * @param {string} type
+   */
+  insertFormat(type) {
+    const textarea = document.getElementById('prod-desc');
+    if (!textarea) return;
+
+    const start = textarea.selectionStart || 0;
+    const end = textarea.selectionEnd || 0;
+    const currentVal = textarea.value;
+    const selected = currentVal.substring(start, end);
+
+    let snippet = '';
+    let cursorOffset = 0;
+
+    switch (type) {
+      case 'heading':
+        snippet = `\n## ${selected || 'Main Heading'}\n`;
+        break;
+      case 'subheading':
+        snippet = `\n### ${selected || 'Sub-heading'}\n`;
+        break;
+      case 'bold':
+        snippet = `**${selected || 'Bold Text'}**`;
+        break;
+      case 'bullet':
+        snippet = selected ? selected.split('\n').map(l => `- ${l}`).join('\n') : `\n- 100% Fresh & Authentic Quality\n- Carefully packaged & hygienic\n`;
+        break;
+      case 'numlist':
+        snippet = selected ? selected.split('\n').map((l, i) => `${i + 1}. ${l}`).join('\n') : `\n1. Store in cool and dry place\n2. Consume within recommended shelf life\n`;
+        break;
+      case 'spec':
+        snippet = `\nBrand: Quality Express\nShelf Life: 6 Months\nCountry of Origin: India\n`;
+        break;
+      case 'highlight':
+        snippet = `\n> Special Note: Keep refrigerated after opening\n`;
+        break;
+      default:
+        return;
+    }
+
+    textarea.value = currentVal.substring(0, start) + snippet + currentVal.substring(end);
+    textarea.focus();
+    textarea.selectionStart = start + snippet.length;
+    textarea.selectionEnd = start + snippet.length;
+
+    this.updateLivePreview();
   },
 
   /**
