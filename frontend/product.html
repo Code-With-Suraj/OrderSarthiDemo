@@ -242,14 +242,36 @@
               ` : ''}
             </div>
 
-            <!-- Rich Formatted Product Description -->
-            <div class="pt-1">
-              <h4 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2 font-display flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-[#0C831F]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span>Product Overview & Details</span>
-              </h4>
-              <div class="product-rich-description bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 text-slate-700">
-                ${Utils.renderRichText(p.description)}
+            <!-- Collapsible / Toggleable Product Overview & Details -->
+            <div class="border border-slate-200 rounded-2xl bg-white overflow-hidden shadow-2xs">
+              <button type="button" onclick="toggleProductOverview()" class="w-full p-3.5 sm:p-4 flex items-center justify-between gap-3 text-left bg-slate-50/90 hover:bg-slate-100/90 transition-all cursor-pointer group">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-7 h-7 rounded-xl bg-emerald-100 text-[#0C831F] flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  </span>
+                  <div class="min-w-0">
+                    <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 font-display flex items-center gap-2">
+                      <span>Product Overview & Details</span>
+                      <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-600">Info</span>
+                    </h4>
+                    <p class="text-[10px] text-slate-500 font-medium truncate">Click to expand/collapse full specifications & details</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <span id="overview-toggle-label" class="text-[10px] font-extrabold text-[#0C831F] uppercase tracking-wider">Hide</span>
+                  <div class="w-6 h-6 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-2xs group-hover:border-slate-300">
+                    <svg id="overview-toggle-arrow" class="w-3.5 h-3.5 text-slate-600 transform transition-transform duration-300 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </div>
+                </div>
+              </button>
+
+              <div id="product-overview-content" class="p-4 sm:p-5 border-t border-slate-100 bg-white transition-all duration-300">
+                <div class="product-rich-description">
+                  ${Utils.renderRichText(p.description)}
+                </div>
               </div>
             </div>
 
@@ -281,6 +303,30 @@
           </div>
         </div>
       `;
+    }
+
+    function toggleProductOverview() {
+      const content = document.getElementById('product-overview-content');
+      const arrow = document.getElementById('overview-toggle-arrow');
+      const label = document.getElementById('overview-toggle-label');
+      if (!content || !arrow) return;
+
+      const isHidden = content.classList.contains('hidden');
+      if (isHidden) {
+        content.classList.remove('hidden');
+        arrow.classList.add('rotate-180');
+        if (label) {
+          label.textContent = 'Hide';
+          label.className = 'text-[10px] font-extrabold text-[#0C831F] uppercase tracking-wider';
+        }
+      } else {
+        content.classList.add('hidden');
+        arrow.classList.remove('rotate-180');
+        if (label) {
+          label.textContent = 'View';
+          label.className = 'text-[10px] font-extrabold text-slate-500 uppercase tracking-wider';
+        }
+      }
     }
   </script>
 </body>
