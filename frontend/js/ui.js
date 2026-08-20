@@ -74,6 +74,7 @@ const UI = {
     if (!shop) shop = CONFIG.getShopInfo();
     const shopName = shop.shop_name || CONFIG.DEFAULT_SHOP_NAME;
     const logoUrl = shop.logo_url || '';
+    const minOrderVal = (shop.min_order_value !== undefined && shop.min_order_value !== "") ? Number(shop.min_order_value) : CONFIG.DEFAULT_MIN_ORDER_VALUE;
 
     document.querySelectorAll('.shop-name-display').forEach(el => {
       el.textContent = shopName;
@@ -81,6 +82,16 @@ const UI = {
 
     document.querySelectorAll('.shop-tagline-display').forEach(el => {
       el.textContent = shop.description || shop.tagline || CONFIG.TAGLINE;
+    });
+
+    document.querySelectorAll('.min-order-display').forEach(el => {
+      if (minOrderVal > 0) {
+        el.textContent = `Min. Order: ₹${minOrderVal}`;
+        el.classList.remove('hidden');
+      } else {
+        el.textContent = 'No Min. Order';
+        el.classList.add('hidden');
+      }
     });
 
     if (logoUrl) {
@@ -114,6 +125,7 @@ const UI = {
     const shop = CONFIG.getShopInfo();
     const shopName = shop.shop_name || CONFIG.DEFAULT_SHOP_NAME;
     const logoUrl = shop.logo_url || '';
+    const minOrder = CONFIG.getMinOrderValue();
     const isInstore = window.location.search.includes('source=qr') || window.location.search.includes('mode=instore') || sessionStorage.getItem('ordersarthi_instore_mode') === 'true';
     if (window.location.search.includes('source=qr') || window.location.search.includes('mode=instore')) {
       sessionStorage.setItem('ordersarthi_instore_mode', 'true');
@@ -142,10 +154,15 @@ const UI = {
                 <div class="flex items-center gap-2">
                   <span class="shop-name-display text-lg sm:text-xl font-extrabold tracking-tight font-display text-slate-900 truncate">${Utils.escapeHTML(shopName)}</span>
                 </div>
-                <div class="flex items-center gap-1.5 text-[10px] sm:text-xs">
+                <div class="flex items-center flex-wrap gap-1.5 text-[10px] sm:text-xs">
                   <span class="text-slate-500 font-medium">by <span class="text-slate-900 font-bold">OrderSarthi</span></span>
                   <span class="text-slate-300">•</span>
                   <span class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-[#0C831F] font-extrabold text-[10px] tracking-wide">⚡ 10 MIN PICKUP</span>
+                  ${minOrder > 0 ? `
+                    <span class="min-order-display px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-extrabold text-[10px] tracking-wide border border-amber-200">
+                      MIN ₹${minOrder}
+                    </span>
+                  ` : ''}
                 </div>
               </div>
             </a>
@@ -294,14 +311,20 @@ const UI = {
 
     const count = Cart.getTotalCount();
     const subtotal = Cart.getSubtotal();
+    const movStatus = Cart.getMinOrderStatus();
 
     barEl.innerHTML = `
       <div class="flex items-center justify-between gap-4 max-w-md mx-auto">
         <div class="flex flex-col">
           <span class="text-xs text-emerald-100 font-medium"><span class="cart-badge-count font-extrabold text-white">${count}</span> ITEMS IN BASKET</span>
-          <span class="text-base font-extrabold text-white font-display cart-subtotal-display">${Utils.formatCurrency(subtotal)}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-base font-extrabold text-white font-display cart-subtotal-display">${Utils.formatCurrency(subtotal)}</span>
+            <span class="mobile-cart-mov-pill text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 ${count > 0 && !movStatus.isMet ? '' : 'hidden'}">
+              Add ₹${movStatus.deficit} for Min. ₹${movStatus.minOrder}
+            </span>
+          </div>
         </div>
-        <a href="${p}cart.html" class="bg-white text-[#0C831F] font-extrabold text-xs py-2.5 px-4 rounded-xl hover:bg-emerald-50 transition-colors shadow-sm flex items-center gap-1">
+        <a href="${p}cart.html" class="bg-white text-[#0C831F] font-extrabold text-xs py-2.5 px-4 rounded-xl hover:bg-emerald-50 transition-colors shadow-sm flex items-center gap-1 shrink-0">
           <span>View Basket</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </a>

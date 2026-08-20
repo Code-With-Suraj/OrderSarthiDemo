@@ -118,11 +118,32 @@ const Cart = {
   },
 
   /**
+   * Check minimum order value status
+   * @returns {Object} { minOrder, subtotal, isMet, deficit, percentage }
+   */
+  getMinOrderStatus() {
+    const subtotal = this.getSubtotal();
+    const minOrder = (typeof CONFIG !== 'undefined' && CONFIG.getMinOrderValue) ? CONFIG.getMinOrderValue() : 0;
+    const isMet = (minOrder <= 0) || (subtotal >= minOrder);
+    const deficit = isMet ? 0 : Math.max(0, minOrder - subtotal);
+    const percentage = minOrder > 0 ? Math.min(100, Math.round((subtotal / minOrder) * 100)) : 100;
+
+    return {
+      minOrder,
+      subtotal,
+      isMet,
+      deficit,
+      percentage
+    };
+  },
+
+  /**
    * Update all cart badges across header & sticky bottom bar
    */
   updateBadges() {
     const count = this.getTotalCount();
     const subtotal = this.getSubtotal();
+    const movStatus = this.getMinOrderStatus();
 
     // Badge elements
     document.querySelectorAll('.cart-badge-count').forEach(el => {
@@ -133,6 +154,16 @@ const Cart = {
     // Subtotal elements
     document.querySelectorAll('.cart-subtotal-display').forEach(el => {
       el.textContent = Utils.formatCurrency(subtotal);
+    });
+
+    // Mobile cart bar deficit pill
+    document.querySelectorAll('.mobile-cart-mov-pill').forEach(el => {
+      if (count > 0 && !movStatus.isMet) {
+        el.textContent = `Add ₹${movStatus.deficit} for Min. ₹${movStatus.minOrder}`;
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
     });
 
     // Sticky mobile cart bar

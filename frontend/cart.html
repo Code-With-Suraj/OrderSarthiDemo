@@ -28,8 +28,13 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
       <!-- Cart Items List -->
-      <div class="lg:col-span-8 space-y-3.5" id="cart-items-container">
-        <!-- Injected via JavaScript -->
+      <div class="lg:col-span-8 space-y-3.5">
+        <!-- Minimum Order Value Progress Card -->
+        <div id="cart-mov-progress-card" class="hidden"></div>
+
+        <div id="cart-items-container" class="space-y-3.5">
+          <!-- Injected via JavaScript -->
+        </div>
       </div>
 
       <!-- Cart Summary Card -->
@@ -50,6 +55,7 @@
               <span>Packaging Charge:</span>
               <span class="text-[#0C831F] font-extrabold">FREE</span>
             </div>
+            <div id="summary-mov-status" class="pt-1"></div>
           </div>
 
           <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
@@ -59,7 +65,7 @@
 
           <div class="space-y-2 pt-2">
             <a href="./checkout.html" id="proceed-checkout-btn" class="btn-primary w-full text-sm font-extrabold !py-3">
-              <span>Proceed to Pickup Slot</span>
+              <span id="proceed-btn-text">Proceed to Pickup Slot</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </a>
             <a href="./shop.html" class="btn-secondary w-full text-xs !py-2.5 font-bold">
@@ -97,20 +103,29 @@
 
     function renderCart() {
       const container = document.getElementById('cart-items-container');
+      const movCard = document.getElementById('cart-mov-progress-card');
+      const summaryMovStatus = document.getElementById('summary-mov-status');
       const clearBtn = document.getElementById('clear-cart-btn');
       const proceedBtn = document.getElementById('proceed-checkout-btn');
+      const proceedBtnText = document.getElementById('proceed-btn-text');
       const subtotalDisplay = document.getElementById('summary-subtotal');
       const totalDisplay = document.getElementById('summary-total');
 
       const items = Cart.getItems();
       const subtotal = Cart.getSubtotal();
+      const movStatus = Cart.getMinOrderStatus();
 
       subtotalDisplay.textContent = Utils.formatCurrency(subtotal);
       totalDisplay.textContent = Utils.formatCurrency(subtotal);
 
       if (items.length === 0) {
         clearBtn?.classList.add('hidden');
-        if (proceedBtn) proceedBtn.classList.add('opacity-40', 'pointer-events-none');
+        if (movCard) movCard.classList.add('hidden');
+        if (summaryMovStatus) summaryMovStatus.innerHTML = '';
+        if (proceedBtn) {
+          proceedBtn.classList.add('opacity-40', 'pointer-events-none');
+          proceedBtn.onclick = null;
+        }
 
         container.innerHTML = `
           <div class="bg-white border border-slate-200 rounded-3xl p-12 text-center shadow-xs">
@@ -126,7 +141,107 @@
       }
 
       clearBtn?.classList.remove('hidden');
-      if (proceedBtn) proceedBtn.classList.remove('opacity-40', 'pointer-events-none');
+
+      // Render Minimum Order Value Progress Card
+      if (movStatus.minOrder > 0) {
+        if (!movStatus.isMet) {
+          if (movCard) {
+            movCard.classList.remove('hidden');
+            movCard.innerHTML = `
+              <div class="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-50 to-orange-50/70 border border-amber-300 shadow-xs space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-7 h-7 rounded-xl bg-amber-500 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">⚡</span>
+                    <div>
+                      <h4 class="font-extrabold text-amber-950 text-xs sm:text-sm">
+                        Add <span class="text-[#0C831F] font-black">${Utils.formatCurrency(movStatus.deficit)}</span> more to place order
+                      </h4>
+                      <p class="text-[11px] text-amber-800 font-medium">Minimum online order amount is <strong>${Utils.formatCurrency(movStatus.minOrder)}</strong></p>
+                    </div>
+                  </div>
+                  <a href="./shop.html" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs transition-colors shadow-xs shrink-0">
+                    + Add Items
+                  </a>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-amber-200/80 rounded-full h-2.5 overflow-hidden p-0.5">
+                  <div class="bg-gradient-to-r from-amber-500 to-[#0C831F] h-full rounded-full transition-all duration-500 ease-out" style="width: ${movStatus.percentage}%"></div>
+                </div>
+                <div class="flex items-center justify-between text-[10px] font-bold text-amber-800">
+                  <span>${Utils.formatCurrency(subtotal)} in cart</span>
+                  <span>Goal: ${Utils.formatCurrency(movStatus.minOrder)} (${movStatus.percentage}%)</span>
+                </div>
+              </div>
+            `;
+          }
+
+          if (summaryMovStatus) {
+            summaryMovStatus.innerHTML = `
+              <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] flex items-center justify-between">
+                <span class="font-bold">Min. Order Requirement:</span>
+                <span class="font-extrabold text-rose-600">${Utils.formatCurrency(movStatus.minOrder)}</span>
+              </div>
+            `;
+          }
+
+          if (proceedBtn) {
+            proceedBtn.classList.remove('pointer-events-none');
+            proceedBtn.classList.add('opacity-75', 'bg-amber-600', 'hover:bg-amber-700');
+            if (proceedBtnText) proceedBtnText.textContent = `Add ${Utils.formatCurrency(movStatus.deficit)} More to Order`;
+            proceedBtn.onclick = (e) => {
+              e.preventDefault();
+              Utils.showToast(`Please add items worth ${Utils.formatCurrency(movStatus.deficit)} more to reach minimum order value (${Utils.formatCurrency(movStatus.minOrder)}).`, 'warning');
+            };
+          }
+        } else {
+          // Minimum requirement met
+          if (movCard) {
+            movCard.classList.remove('hidden');
+            movCard.innerHTML = `
+              <div class="p-3.5 sm:p-4 rounded-3xl bg-emerald-50 border border-emerald-300 shadow-xs flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-7 h-7 rounded-xl bg-[#0C831F] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">✓</span>
+                  <div>
+                    <h4 class="font-extrabold text-[#0C831F] text-xs sm:text-sm">
+                      🎉 Minimum order requirement met!
+                    </h4>
+                    <p class="text-[11px] text-emerald-800 font-medium">Order total (${Utils.formatCurrency(subtotal)}) satisfies shop minimum (${Utils.formatCurrency(movStatus.minOrder)}).</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-[#0C831F] text-white shadow-xs shrink-0">
+                  Ready to Slot
+                </span>
+              </div>
+            `;
+          }
+
+          if (summaryMovStatus) {
+            summaryMovStatus.innerHTML = `
+              <div class="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-[#0C831F] text-[11px] flex items-center justify-between font-bold">
+                <span>Min. Order (₹${movStatus.minOrder}):</span>
+                <span class="text-xs font-black">✓ UNLOCKED</span>
+              </div>
+            `;
+          }
+
+          if (proceedBtn) {
+            proceedBtn.classList.remove('opacity-75', 'opacity-40', 'pointer-events-none', 'bg-amber-600', 'hover:bg-amber-700');
+            proceedBtn.classList.add('bg-[#0C831F]', 'hover:bg-[#096818]');
+            if (proceedBtnText) proceedBtnText.textContent = 'Proceed to Pickup Slot';
+            proceedBtn.onclick = null;
+          }
+        }
+      } else {
+        if (movCard) movCard.classList.add('hidden');
+        if (summaryMovStatus) summaryMovStatus.innerHTML = '';
+        if (proceedBtn) {
+          proceedBtn.classList.remove('opacity-40', 'pointer-events-none', 'opacity-75', 'bg-amber-600');
+          proceedBtn.classList.add('bg-[#0C831F]', 'hover:bg-[#096818]');
+          if (proceedBtnText) proceedBtnText.textContent = 'Proceed to Pickup Slot';
+          proceedBtn.onclick = null;
+        }
+      }
 
       container.innerHTML = items.map(item => `
         <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-4 shadow-xs">

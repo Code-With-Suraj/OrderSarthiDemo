@@ -103,7 +103,12 @@
       <!-- Right Column: Order Review & Submit -->
       <div class="lg:col-span-5">
         <div class="bg-white border border-slate-200 rounded-3xl p-6 space-y-5 sticky top-24 shadow-xs">
-          <h3 class="text-base font-extrabold text-slate-900 font-display border-b border-slate-200 pb-3">Items Summary</h3>
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <h3 class="text-base font-extrabold text-slate-900 font-display">Items Summary</h3>
+            <span id="checkout-mov-pill" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full hidden"></span>
+          </div>
+
+          <div id="checkout-mov-banner" class="hidden"></div>
 
           <div id="checkout-items-list" class="space-y-1 max-h-48 overflow-y-auto pr-1">
             <!-- Injected via JS -->

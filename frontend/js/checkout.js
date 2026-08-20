@@ -402,10 +402,51 @@ const CheckoutController = {
   renderOrderSummary() {
     const container = document.getElementById('checkout-items-list');
     const totalDisplay = document.getElementById('checkout-total-display');
+    const movBanner = document.getElementById('checkout-mov-banner');
+    const movPill = document.getElementById('checkout-mov-pill');
     const items = Cart.getItems();
     const subtotal = Cart.getSubtotal();
+    const movStatus = Cart.getMinOrderStatus();
 
     if (totalDisplay) totalDisplay.textContent = Utils.formatCurrency(subtotal);
+
+    if (movPill) {
+      if (movStatus.minOrder > 0) {
+        movPill.classList.remove('hidden');
+        if (movStatus.isMet) {
+          movPill.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-[#0C831F] border border-emerald-200';
+          movPill.textContent = `Min. ₹${movStatus.minOrder} Met ✓`;
+        } else {
+          movPill.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
+          movPill.textContent = `Min. ₹${movStatus.minOrder}`;
+        }
+      } else {
+        movPill.classList.add('hidden');
+      }
+    }
+
+    if (movBanner) {
+      if (movStatus.minOrder > 0 && !movStatus.isMet) {
+        movBanner.classList.remove('hidden');
+        movBanner.innerHTML = `
+          <div class="p-3 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-900 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-extrabold flex items-center gap-1.5 text-amber-950">
+                <span class="text-amber-600 font-black">⚠️</span> Minimum Order Value Required
+              </span>
+              <span class="font-black text-[#0C831F]">${Utils.formatCurrency(movStatus.minOrder)}</span>
+            </div>
+            <p class="text-[11px] text-amber-800 font-medium">Your current order is <strong>${Utils.formatCurrency(subtotal)}</strong>. Please add items worth <strong>${Utils.formatCurrency(movStatus.deficit)}</strong> more.</p>
+            <a href="./shop.html" class="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-900 hover:underline pt-0.5">
+              <span>+ Add More Items From Shop</span> &rarr;
+            </a>
+          </div>
+        `;
+      } else {
+        movBanner.classList.add('hidden');
+        movBanner.innerHTML = '';
+      }
+    }
 
     if (container) {
       container.innerHTML = items.map(i => `
@@ -552,6 +593,13 @@ const CheckoutController = {
       const items = Cart.getItems();
       if (items.length === 0) {
         Utils.showToast('Your cart is empty.', 'warning');
+        return;
+      }
+
+      // Validate Minimum Order Value Requirement
+      const movStatus = Cart.getMinOrderStatus();
+      if (!movStatus.isMet) {
+        Utils.showToast(`Minimum order amount is ₹${movStatus.minOrder}. Please add items worth ₹${movStatus.deficit} more before placing order.`, 'warning');
         return;
       }
 

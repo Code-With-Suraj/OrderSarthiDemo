@@ -55,10 +55,38 @@ const AdminSettings = {
       if (rzpKeyInput) rzpKeyInput.value = shop.razorpay_key_id || CONFIG.RAZORPAY_KEY_ID || '';
       if (rzpEnabledInput) rzpEnabledInput.checked = (shop.razorpay_enabled !== false);
 
+      // Minimum Order Value (MOV)
+      const movInput = document.getElementById('min-order-value');
+      const movVal = (shop.min_order_value !== undefined && shop.min_order_value !== "") ? Number(shop.min_order_value) : 50;
+      if (movInput) {
+        movInput.value = isNaN(movVal) ? 0 : movVal;
+      }
+      this.onMovChange(movVal);
+
       // Render Store QR Standee
       this.renderQrStandee(shop);
     } catch (err) {
       Utils.showToast('Failed to load shop settings: ' + err.message, 'error');
+    }
+  },
+
+  onMovChange(val) {
+    const num = Number(val) || 0;
+    const badge = document.getElementById('mov-preview-badge');
+    if (badge) {
+      badge.textContent = num > 0 ? `Min. Order: ₹${num}` : 'No Minimum Order';
+      badge.className = num > 0 
+        ? 'self-start sm:self-auto px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-[#0C831F] text-white shadow-xs'
+        : 'self-start sm:self-auto px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-slate-200 text-slate-700 shadow-xs';
+    }
+  },
+
+  setMovPreset(amount) {
+    const input = document.getElementById('min-order-value');
+    if (input) {
+      input.value = amount;
+      this.onMovChange(amount);
+      Utils.showToast(`Minimum order set to ₹${amount}`, 'info');
     }
   },
 
@@ -151,6 +179,7 @@ const AdminSettings = {
         closing_time: document.getElementById('shop-close-time').value,
         description: document.getElementById('shop-desc').value.trim(),
         payment_mode: paymentMode,
+        min_order_value: Math.max(0, Number(document.getElementById('min-order-value')?.value) || 0),
         razorpay_key_id: razorpayKeyId,
         razorpay_enabled: razorpayEnabled
       };

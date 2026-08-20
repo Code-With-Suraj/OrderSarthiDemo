@@ -5,7 +5,7 @@
 
 const CONFIG = {
   // Replace this with your deployed Google Apps Script Web App URL
-  API_BASE_URL: "https://script.google.com/macros/s/AKfycbyAFecZe-wxD8hyLBsMiI5alLEzh9mUqGU-EH_C0rcQTPjTQaDvPC_SEv6hEtohYSjxQA/exec",
+  API_BASE_URL: "https://script.google.com/macros/s/AKfycby6nSSNIp5l48-lerbJUMQJ8IZiL9MR4ZfcwIIsf-321mRQ-B_W4YntEgc_GnSDMIVV/exec",
 
   // App & White-Label Platform Settings
   DEFAULT_SHOP_NAME: "Local Express Shop",
@@ -19,6 +19,7 @@ const CONFIG = {
   // Razorpay Gateway Defaults
   RAZORPAY_KEY_ID: "rzp_live_Sugpl07IegaqDU",
   DEFAULT_PAYMENT_MODE: "BOTH", // 'BOTH' | 'ONLINE_ONLY' | 'OFFLINE_ONLY'
+  DEFAULT_MIN_ORDER_VALUE: 50,
 
   // Concurrency & Cache Optimizations
   SEARCH_DEBOUNCE_MS: 300,
@@ -53,7 +54,8 @@ const CONFIG = {
     return {
       shop_name: this.DEFAULT_SHOP_NAME,
       tagline: this.TAGLINE,
-      logo_url: ""
+      logo_url: "",
+      min_order_value: this.DEFAULT_MIN_ORDER_VALUE
     };
   },
 
@@ -64,6 +66,19 @@ const CONFIG = {
   getShopName() {
     const info = this.getShopInfo();
     return info?.shop_name || this.DEFAULT_SHOP_NAME;
+  },
+
+  /**
+   * Helper to get active Minimum Order Value
+   * @returns {number}
+   */
+  getMinOrderValue() {
+    const info = this.getShopInfo();
+    if (info && info.min_order_value !== undefined && info.min_order_value !== "") {
+      const val = Number(info.min_order_value);
+      return isNaN(val) ? 0 : Math.max(0, val);
+    }
+    return this.DEFAULT_MIN_ORDER_VALUE;
   }
 };
 
