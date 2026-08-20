@@ -3,7 +3,7 @@
  * Fast caching, offline support, background sync, and instant app install.
  */
 
-const CACHE_NAME = 'ordersarthi-v1.2';
+const CACHE_NAME = 'ordersarthi-v1.3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
