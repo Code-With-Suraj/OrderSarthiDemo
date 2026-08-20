@@ -113,16 +113,53 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">SKU / Code</label>
-            <input type="text" id="prod-sku" placeholder="ATT-001"
-              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">SKU / Code</label>
+          <input type="text" id="prod-sku" placeholder="e.g. ATT-001"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+        </div>
+
+        <!-- Product Images & Gallery Management -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="block font-extrabold text-slate-900 text-xs flex items-center gap-1.5">
+                <span>🖼️ Product Images Gallery</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-[#0C831F]">Multi-Image</span>
+              </label>
+              <p class="text-[10px] text-slate-500 font-medium mt-0.5">Upload 1 Hero Image and/or add multiple product image links</p>
+            </div>
+            <button type="button" onclick="AdminProducts.addImageUrlField()" class="text-xs font-extrabold text-[#0C831F] hover:underline flex items-center gap-1">
+              + Add Image Link
+            </button>
           </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Image URL</label>
-            <input type="url" id="prod-image-url" placeholder="https://..."
-              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] focus:bg-white" />
+
+          <!-- Hero Image: Upload or Direct URL -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Upload Hero Image File</label>
+              <input type="file" id="prod-image-file" accept="image/*" onchange="AdminProducts.handleHeroImageFile(event)"
+                class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-100 file:text-[#0C831F] hover:file:bg-emerald-200 cursor-pointer" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Primary Image URL (Hero)</label>
+              <input type="url" id="prod-image-url" placeholder="https://images.unsplash.com/..."
+                oninput="AdminProducts.renderImagePreviews()"
+                class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] text-xs" />
+            </div>
+          </div>
+
+          <!-- Additional Image Links Container -->
+          <div id="additional-images-container" class="space-y-2">
+            <!-- Dynamically injected additional link inputs -->
+          </div>
+
+          <!-- Live Image Strip Gallery Preview -->
+          <div id="images-preview-strip" class="hidden pt-2 border-t border-slate-200/80">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Gallery Preview:</div>
+            <div id="images-preview-list" class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+              <!-- Rendered image thumbnails -->
+            </div>
           </div>
         </div>
 

@@ -196,23 +196,70 @@
       const isOutOfStock = p.stock_status === 'OUT_OF_STOCK';
       const hasDiscount = p.mrp > p.selling_price;
       const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
-      const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600';
+
+      // Parse all images (from p.images array or p.image_url string)
+      let productImages = [];
+      if (Array.isArray(p.images) && p.images.length > 0) {
+        productImages = p.images.filter(Boolean);
+      } else if (p.image_url) {
+        productImages = String(p.image_url).split(/[\n,\r|]+/).map(s => s.trim()).filter(Boolean);
+      }
+      if (productImages.length === 0) {
+        productImages = ['https://images.unsplash.com/photo-1542838132-92c53300491e?w=600'];
+      }
+      window.currentProductImages = productImages;
+      window.activeImageIndex = 0;
 
       container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-center">
-          <!-- Product Image -->
-          <div class="relative aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center p-4">
-            <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" class="w-full h-full object-contain ${isOutOfStock ? 'opacity-40 grayscale' : ''}" />
-            
-            ${hasDiscount && !isOutOfStock ? `
-              <span class="absolute top-4 left-4 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-[#2563EB] text-white shadow-xs">
-                ${discountPercent}% OFF
-              </span>
-            ` : ''}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start">
+          <!-- Product Multi-Image Gallery (Blinkit / E-Commerce Pro Style) -->
+          <div class="space-y-3.5 sticky top-24">
+            <!-- Main Hero Image Display -->
+            <div class="relative aspect-square rounded-3xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center p-4 group shadow-xs">
+              <img id="main-product-image" src="${productImages[0]}" alt="${Utils.escapeHTML(p.product_name)}"
+                class="w-full h-full object-contain transition-all duration-300 ${isOutOfStock ? 'opacity-40 grayscale' : ''}" />
+              
+              <!-- Discount Badge -->
+              ${hasDiscount && !isOutOfStock ? `
+                <span class="absolute top-4 left-4 px-2.5 py-1 rounded-xl text-xs font-extrabold bg-[#2563EB] text-white shadow-xs">
+                  ${discountPercent}% OFF
+                </span>
+              ` : ''}
 
-            ${isOutOfStock ? `
-              <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center">
-                <span class="px-4 py-2 rounded-xl text-sm font-extrabold bg-slate-900 text-white">Out of Stock</span>
+              <!-- Image Index Counter (e.g. 1 / 4) -->
+              ${productImages.length > 1 ? `
+                <span id="gallery-counter-badge" class="absolute bottom-4 right-4 px-2.5 py-1 rounded-xl text-[11px] font-extrabold bg-slate-900/80 text-white backdrop-blur-xs shadow-xs">
+                  1 / ${productImages.length}
+                </span>
+              ` : ''}
+
+              <!-- Prev / Next Navigation Overlay Arrows -->
+              ${productImages.length > 1 ? `
+                <button type="button" onclick="prevProductImage()" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md border border-slate-200 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-all hover:scale-105 cursor-pointer" title="Previous image">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button type="button" onclick="nextProductImage()" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-slate-800 flex items-center justify-center shadow-md border border-slate-200 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-all hover:scale-105 cursor-pointer" title="Next image">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+              ` : ''}
+
+              <!-- Out of stock badge -->
+              ${isOutOfStock ? `
+                <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center">
+                  <span class="px-4 py-2 rounded-xl text-sm font-extrabold bg-slate-900 text-white">Out of Stock</span>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Thumbnail Navigation Strip (if multiple images) -->
+            ${productImages.length > 1 ? `
+              <div class="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar pt-1">
+                ${productImages.map((img, idx) => `
+                  <button type="button" onclick="switchProductImage(${idx})"
+                    class="gallery-thumbnail-btn relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 p-1 bg-white cursor-pointer shrink-0 transition-all duration-200 ${idx === 0 ? 'border-[#0C831F] ring-2 ring-[#0C831F]/30 scale-105 shadow-sm' : 'border-slate-200 hover:border-slate-400 opacity-75 hover:opacity-100'}">
+                    <img src="${img}" alt="${Utils.escapeHTML(p.product_name)} - View ${idx + 1}" class="w-full h-full object-contain" />
+                  </button>
+                `).join('')}
               </div>
             ` : ''}
           </div>
@@ -328,6 +375,51 @@
         }
       }
     }
+
+    function switchProductImage(index) {
+      if (!window.currentProductImages || !window.currentProductImages[index]) return;
+      window.activeImageIndex = index;
+      const mainImg = document.getElementById('main-product-image');
+      const counter = document.getElementById('gallery-counter-badge');
+      if (mainImg) {
+        mainImg.style.opacity = '0.3';
+        mainImg.src = window.currentProductImages[index];
+        setTimeout(() => { mainImg.style.opacity = '1'; }, 100);
+      }
+      if (counter) {
+        counter.textContent = `${index + 1} / ${window.currentProductImages.length}`;
+      }
+
+      // Update thumbnail active states
+      const thumbBtns = document.querySelectorAll('.gallery-thumbnail-btn');
+      thumbBtns.forEach((btn, i) => {
+        if (i === index) {
+          btn.className = 'gallery-thumbnail-btn relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 p-1 bg-white cursor-pointer shrink-0 transition-all duration-200 border-[#0C831F] ring-2 ring-[#0C831F]/30 scale-105 shadow-sm';
+        } else {
+          btn.className = 'gallery-thumbnail-btn relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 p-1 bg-white cursor-pointer shrink-0 transition-all duration-200 border-slate-200 hover:border-slate-400 opacity-75 hover:opacity-100';
+        }
+      });
+    }
+
+    function nextProductImage() {
+      if (!window.currentProductImages || window.currentProductImages.length <= 1) return;
+      const nextIdx = (window.activeImageIndex + 1) % window.currentProductImages.length;
+      switchProductImage(nextIdx);
+    }
+
+    function prevProductImage() {
+      if (!window.currentProductImages || window.currentProductImages.length <= 1) return;
+      const prevIdx = (window.activeImageIndex - 1 + window.currentProductImages.length) % window.currentProductImages.length;
+      switchProductImage(prevIdx);
+    }
+
+    // Keyboard Left/Right Navigation Support
+    document.addEventListener('keydown', (e) => {
+      if (window.currentProductImages && window.currentProductImages.length > 1) {
+        if (e.key === 'ArrowRight') nextProductImage();
+        if (e.key === 'ArrowLeft') prevProductImage();
+      }
+    });
   </script>
 </body>
 </html>

@@ -14,7 +14,12 @@ const AdminSettings = {
 
   async loadShopInfo() {
     try {
-      const shop = await api.get('getShop', {}, true);
+      let shop = {};
+      try {
+        shop = await api.get('adminGetShop', {}, true);
+      } catch (e) {
+        shop = await api.get('getShop', {}, true);
+      }
 
       document.getElementById('shop-name').value = shop.shop_name || '';
       document.getElementById('shop-phone').value = shop.mobile || '';
@@ -51,8 +56,10 @@ const AdminSettings = {
 
       // Razorpay Credentials & Toggle
       const rzpKeyInput = document.getElementById('razorpay-key-id');
+      const rzpSecretInput = document.getElementById('razorpay-key-secret');
       const rzpEnabledInput = document.getElementById('razorpay-enabled');
       if (rzpKeyInput) rzpKeyInput.value = shop.razorpay_key_id || CONFIG.RAZORPAY_KEY_ID || '';
+      if (rzpSecretInput) rzpSecretInput.value = shop.razorpay_key_secret || '';
       if (rzpEnabledInput) rzpEnabledInput.checked = (shop.razorpay_enabled !== false);
 
       // Minimum Order Value (MOV)
@@ -190,11 +197,15 @@ const AdminSettings = {
         payload.logo_url = logoUrl;
       }
 
-      if (razorpayKeySecret) {
+      if (razorpayKeySecret !== undefined) {
         payload.razorpay_key_secret = razorpayKeySecret;
       }
 
       const updatedShop = await api.post('adminUpdateShop', payload, true);
+      if (updatedShop.razorpay_key_secret) {
+        const secretInput = document.getElementById('razorpay-key-secret');
+        if (secretInput) secretInput.value = updatedShop.razorpay_key_secret;
+      }
       localStorage.setItem(CONFIG.STORAGE_KEYS.SHOP_INFO, JSON.stringify(updatedShop));
       this.updateLogoPreview(updatedShop.logo_url);
       this.renderQrStandee(updatedShop);

@@ -204,6 +204,10 @@ const AdminProducts = {
     this.state.editingProduct = productId ? this.state.products.find(p => p.product_id === productId) : null;
     const p = this.state.editingProduct || {};
 
+    this.state.heroImageBase64 = null;
+    const fileInput = document.getElementById('prod-image-file');
+    if (fileInput) fileInput.value = '';
+
     document.getElementById('modal-title').textContent = productId ? 'Edit Product' : 'Add New Product';
     document.getElementById('prod-name').value = p.product_name || '';
     document.getElementById('prod-category-select').value = p.category_id || '';
@@ -212,7 +216,23 @@ const AdminProducts = {
     document.getElementById('prod-unit').value = p.unit || '1 unit';
     document.getElementById('prod-stock').value = p.stock_quantity || 50;
     document.getElementById('prod-sku').value = p.sku || '';
-    document.getElementById('prod-image-url').value = p.image_url || '';
+
+    // Extract all image URLs
+    const rawImages = p.images || (p.image_url ? String(p.image_url).split(/[\n,\r|]+/).map(s => s.trim()).filter(Boolean) : []);
+    document.getElementById('prod-image-url').value = rawImages.length > 0 ? rawImages[0] : (p.image_url || '');
+
+    // Populate additional image link fields (index 1..n)
+    const addlContainer = document.getElementById('additional-images-container');
+    if (addlContainer) {
+      addlContainer.innerHTML = '';
+      if (rawImages.length > 1) {
+        for (let i = 1; i < rawImages.length; i++) {
+          this.addImageUrlField(rawImages[i]);
+        }
+      }
+    }
+
+    this.renderImagePreviews();
     document.getElementById('prod-desc').value = p.description || '';
 
     this.setDescTab('write');
@@ -223,6 +243,104 @@ const AdminProducts = {
 
   closeModal() {
     document.getElementById('product-form-modal')?.classList.add('hidden');
+  },
+
+  /**
+   * Handle Hero Image File Selection (Drive upload preparation)
+   * @param {Event} e
+   */
+  handleHeroImageFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) {
+      this.state.heroImageBase64 = null;
+      this.renderImagePreviews();
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      Utils.showToast('Image file too large (Max 5MB). Please choose a smaller image.', 'warning');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (loadEvt) => {
+      this.state.heroImageBase64 = loadEvt.target.result;
+      this.renderImagePreviews();
+    };
+    reader.readAsDataURL(file);
+  },
+
+  /**
+   * Add new additional image URL input row
+   * @param {string} initialUrl
+   */
+  addImageUrlField(initialUrl = '') {
+    const container = document.getElementById('additional-images-container');
+    if (!container) return;
+
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-2';
+    row.innerHTML = `
+      <input type="url" placeholder="https://..." value="${Utils.escapeHTML(initialUrl)}"
+        oninput="AdminProducts.renderImagePreviews()"
+        class="additional-img-input flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-[#0C831F] text-xs" />
+      <button type="button" onclick="AdminProducts.removeImageUrlField(this)" class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold flex items-center justify-center text-xs transition-colors shrink-0" title="Remove link">
+        ✕
+      </button>
+    `;
+    container.appendChild(row);
+    this.renderImagePreviews();
+  },
+
+  /**
+   * Remove additional image URL input row
+   * @param {HTMLElement} btn
+   */
+  removeImageUrlField(btn) {
+    btn.parentElement?.remove();
+    this.renderImagePreviews();
+  },
+
+  /**
+   * Render real-time thumbnails of all entered product images
+   */
+  renderImagePreviews() {
+    const strip = document.getElementById('images-preview-strip');
+    const list = document.getElementById('images-preview-list');
+    if (!strip || !list) return;
+
+    const images = [];
+
+    // Hero image (either uploaded file data or primary URL)
+    if (this.state.heroImageBase64) {
+      images.push({ url: this.state.heroImageBase64, isUploaded: true });
+    } else {
+      const heroUrl = document.getElementById('prod-image-url')?.value.trim();
+      if (heroUrl) images.push({ url: heroUrl, isHero: true });
+    }
+
+    // Additional inputs
+    const addlInputs = document.querySelectorAll('.additional-img-input');
+    addlInputs.forEach(input => {
+      const val = input.value.trim();
+      if (val) images.push({ url: val });
+    });
+
+    if (images.length === 0) {
+      strip.classList.add('hidden');
+      return;
+    }
+
+    strip.classList.remove('hidden');
+    list.innerHTML = images.map((img, idx) => `
+      <div class="relative w-14 h-14 rounded-xl overflow-hidden bg-white border border-slate-200 p-0.5 shrink-0 group shadow-2xs">
+        <img src="${img.url}" class="w-full h-full object-contain" onerror="this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?w=100'" />
+        <span class="absolute bottom-0 inset-x-0 bg-slate-900/70 text-white text-[8px] font-extrabold text-center py-0.2">
+          ${idx === 0 ? 'Hero' : `#${idx + 1}`}
+        </span>
+      </div>
+    `).join('');
   },
 
   /**
@@ -336,6 +454,17 @@ const AdminProducts = {
     if (btn) btn.disabled = true;
 
     try {
+      // Collect all image URLs
+      const allImages = [];
+      const primaryUrl = document.getElementById('prod-image-url')?.value.trim();
+      if (primaryUrl) allImages.push(primaryUrl);
+
+      const addlInputs = document.querySelectorAll('.additional-img-input');
+      addlInputs.forEach(input => {
+        const u = input.value.trim();
+        if (u && !allImages.includes(u)) allImages.push(u);
+      });
+
       const payload = {
         product_name: document.getElementById('prod-name').value.trim(),
         category_id: document.getElementById('prod-category-select').value,
@@ -344,9 +473,14 @@ const AdminProducts = {
         unit: document.getElementById('prod-unit').value.trim(),
         stock_quantity: Number(document.getElementById('prod-stock').value),
         sku: document.getElementById('prod-sku').value.trim(),
-        image_url: document.getElementById('prod-image-url').value.trim(),
+        image_url: allImages.join('\n'),
+        images: allImages,
         description: document.getElementById('prod-desc').value.trim()
       };
+
+      if (this.state.heroImageBase64) {
+        payload.image_base64 = this.state.heroImageBase64;
+      }
 
       if (this.state.editingProduct) {
         payload.productId = this.state.editingProduct.product_id;
