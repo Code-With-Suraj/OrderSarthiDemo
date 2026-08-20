@@ -221,3 +221,26 @@ h1, h2, h3, h4, .font-display {
   margin-bottom: 0;
 }
 
+.product-rich-description table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.product-rich-description th {
+  background-color: #F8FAFC;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.product-rich-description td,
+.product-rich-description th {
+  border-bottom: 1px solid #F1F5F9;
+  padding: 0.625rem 0.875rem;
+}
+
+.product-rich-description tr:last-child td {
+  border-bottom: none;
+}
+
+

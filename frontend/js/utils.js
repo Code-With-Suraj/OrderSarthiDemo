@@ -338,6 +338,24 @@ const Utils = {
         continue;
       }
 
+      // Markdown Tables (| Header 1 | Header 2 |)
+      if (trimmed.startsWith('|') && trimmed.includes('|')) {
+        flushParagraph();
+        closeLists();
+
+        const tableLines = [];
+        while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().includes('|')) {
+          tableLines.push(lines[i].trim());
+          i++;
+        }
+        i--; // Step back one line as outer loop will increment
+
+        if (tableLines.length > 0) {
+          html += this.renderMarkdownTable(tableLines);
+          continue;
+        }
+      }
+
       // Bullet List (- Item, * Item, • Item)
       const bulletMatch = trimmed.match(/^[-*•]\s+(.+)$/);
       if (bulletMatch) {
@@ -358,17 +376,29 @@ const Utils = {
         continue;
       }
 
-      // Key-Value Feature Spec line (e.g. "Brand: Nestle", "Shelf Life: 6 Months")
+      // Key-Value Feature Spec line (e.g. "Brand: Nestle", "Storage: Store in cool dry place")
       const kvMatch = trimmed.match(/^([A-Za-z0-9\s\-_/&]+):\s+(.+)$/);
       if (kvMatch && !trimmed.startsWith('http') && kvMatch[1].length < 30) {
         flushParagraph();
         closeLists();
-        html += `
-          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium mr-2 mb-2 shadow-2xs">
-            <span class="font-extrabold text-slate-900">${this.escapeHTML(kvMatch[1])}:</span>
-            <span class="text-slate-600">${this.renderInlineMarkdown(kvMatch[2])}</span>
-          </div>
-        `;
+        const key = kvMatch[1].trim();
+        const val = kvMatch[2].trim();
+
+        if (val.length > 40 || val.includes('\n')) {
+          html += `
+            <div class="my-2 p-3 rounded-2xl bg-slate-50/90 border border-slate-200 text-xs sm:text-sm text-slate-700 leading-relaxed shadow-2xs">
+              <strong class="font-black text-slate-900">${this.escapeHTML(key)}:</strong>
+              <span class="font-medium text-slate-700 ml-1">${this.renderInlineMarkdown(val)}</span>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium mr-2 mb-2 shadow-2xs">
+              <span class="font-extrabold text-slate-900">${this.escapeHTML(key)}:</span>
+              <span class="text-slate-600">${this.renderInlineMarkdown(val)}</span>
+            </div>
+          `;
+        }
         continue;
       }
 
@@ -381,6 +411,69 @@ const Utils = {
     closeLists();
 
     return html;
+  },
+
+  /**
+   * Parse and render Markdown Table into styled responsive HTML table
+   * @param {Array<string>} tableLines
+   * @returns {string} HTML table
+   */
+  renderMarkdownTable(tableLines) {
+    if (!tableLines || tableLines.length === 0) return '';
+
+    const parseRow = (line) => {
+      let content = line.trim();
+      if (content.startsWith('|')) content = content.substring(1);
+      if (content.endsWith('|')) content = content.substring(0, content.length - 1);
+      return content.split('|').map(c => c.trim());
+    };
+
+    const isSeparatorRow = (line) => {
+      return /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?$/.test(line.trim());
+    };
+
+    let headerCells = [];
+    let rows = [];
+    let hasHeader = false;
+
+    if (tableLines.length >= 2 && isSeparatorRow(tableLines[1])) {
+      hasHeader = true;
+      headerCells = parseRow(tableLines[0]);
+      for (let r = 2; r < tableLines.length; r++) {
+        if (!isSeparatorRow(tableLines[r])) {
+          rows.push(parseRow(tableLines[r]));
+        }
+      }
+    } else {
+      for (let r = 0; r < tableLines.length; r++) {
+        if (!isSeparatorRow(tableLines[r])) {
+          rows.push(parseRow(tableLines[r]));
+        }
+      }
+    }
+
+    let out = '<div class="my-3 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs"><div class="overflow-x-auto"><table class="w-full text-left text-xs sm:text-sm border-collapse">';
+
+    if (hasHeader && headerCells.length > 0) {
+      out += '<thead class="bg-slate-100/90 border-b border-slate-200 text-slate-900 font-extrabold uppercase text-[10px] sm:text-xs tracking-wider"><tr>';
+      headerCells.forEach(cell => {
+        out += `<th class="py-2.5 px-3.5 font-display">${this.renderInlineMarkdown(cell)}</th>`;
+      });
+      out += '</tr></thead>';
+    }
+
+    out += '<tbody class="divide-y divide-slate-100">';
+    rows.forEach((cols) => {
+      out += '<tr class="hover:bg-slate-50/70 transition-colors">';
+      cols.forEach((cell, colIdx) => {
+        const isFirstCol = colIdx === 0;
+        out += `<td class="py-2.5 px-3.5 ${isFirstCol ? 'font-extrabold text-slate-900 bg-slate-50/50 w-2/5 sm:w-1/3' : 'text-slate-700 font-medium'}">${this.renderInlineMarkdown(cell)}</td>`;
+      });
+      out += '</tr>';
+    });
+    out += '</tbody></table></div></div>';
+
+    return out;
   },
 
   /**

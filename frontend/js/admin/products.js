@@ -430,6 +430,9 @@ const AdminProducts = {
       case 'spec':
         snippet = `\nBrand: Quality Express\nShelf Life: 6 Months\nCountry of Origin: India\n`;
         break;
+      case 'table':
+        snippet = `\n| Attribute | Details |\n| --- | --- |\n| Brand | Aashirvaad |\n| Category | Wheat Flour / Atta |\n| Purity | 100% Pure Atta |\n| Best For | Roti & Chapati |\n`;
+        break;
       case 'highlight':
         snippet = `\n> Special Note: Keep refrigerated after opening\n`;
         break;
