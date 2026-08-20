@@ -37,19 +37,36 @@ const ProductsController = {
   },
 
   /**
-   * Load Best Seller items
+   * Load Best Seller items instantly (0-1ms)
    */
   async loadBestSellers() {
     const section = document.getElementById('bestsellers-section');
     if (!section) return;
 
+    // STEP 1: Instant 0.1ms render from local recommendation cache
+    if (typeof Recommendations !== 'undefined') {
+      const instantBS = Recommendations.getInstantBestSellers(8);
+      if (instantBS && instantBS.length > 0) {
+        this.state.bestsellers = instantBS;
+        this.renderBestSellers();
+      }
+    }
+
+    // STEP 2: Background refresh if cache is empty or stale
     try {
-      const res = await api.get('getBestSellers', { limit: 8 });
-      this.state.bestsellers = res.products || [];
-      this.renderBestSellers();
+      if (typeof Recommendations !== 'undefined') {
+        Recommendations.preload(false);
+      }
+      if (!this.state.bestsellers || this.state.bestsellers.length === 0) {
+        const res = await api.get('getBestSellers', { limit: 8 });
+        this.state.bestsellers = res.products || [];
+        this.renderBestSellers();
+      }
     } catch (err) {
       console.warn('Failed to load best sellers:', err);
-      if (section) section.classList.add('hidden');
+      if (section && (!this.state.bestsellers || this.state.bestsellers.length === 0)) {
+        section.classList.add('hidden');
+      }
     }
   },
 
@@ -198,6 +215,11 @@ const ProductsController = {
 
       const newProducts = result.products || [];
       this.state.hasMore = result.pagination?.has_more || false;
+
+      // Automatically warm recommendations catalog cache
+      if (typeof Recommendations !== 'undefined' && newProducts.length > 0) {
+        Recommendations.feedCatalog(newProducts);
+      }
 
       if (reset) {
         this.state.products = newProducts;

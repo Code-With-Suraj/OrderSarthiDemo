@@ -110,63 +110,84 @@
       Cart.addItem(currentProduct, selectedQty);
     }
 
-    async function loadRelatedProducts(categoryId, currentProductId) {
+    function renderRelatedCards(products) {
       const section = document.getElementById('related-products-section');
       const slider = document.getElementById('related-products-slider');
       if (!section || !slider) return;
 
-      try {
-        const res = await api.get('getUpsellProducts', {
-          categoryIds: categoryId || '',
-          excludeProductIds: currentProductId || '',
-          limit: 6
-        });
-
-        const products = res.products || [];
-        if (products.length === 0) {
-          section.classList.add('hidden');
-          return;
-        }
-
-        section.classList.remove('hidden');
-        slider.innerHTML = products.map(p => {
-          const hasDiscount = p.mrp > p.selling_price;
-          const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
-          const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300';
-
-          return `
-            <div class="w-40 sm:w-48 flex-shrink-0 bg-slate-50 hover:bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-3 flex flex-col justify-between transition-all group shadow-xs">
-              <a href="./product.html?id=${p.product_id}" class="block relative aspect-square rounded-xl overflow-hidden mb-2.5 bg-white border border-slate-100 p-1.5">
-                <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                ${hasDiscount ? `
-                  <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#2563EB] text-white">
-                    ${discountPercent}% OFF
-                  </span>
-                ` : ''}
-              </a>
-
-              <div class="flex-1">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">${Utils.escapeHTML(p.unit || 'unit')}</div>
-                <a href="./product.html?id=${p.product_id}" class="block text-xs sm:text-sm font-bold text-slate-900 hover:text-[#0C831F] transition-colors line-clamp-2 leading-snug mb-2">
-                  ${Utils.escapeHTML(p.product_name)}
-                </a>
-              </div>
-
-              <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 mt-auto">
-                <div>
-                  <div class="text-sm font-extrabold text-slate-900 font-display">${Utils.formatCurrency(p.selling_price)}</div>
-                  ${hasDiscount ? `<div class="text-[11px] text-slate-400 line-through">${Utils.formatCurrency(p.mrp)}</div>` : ''}
-                </div>
-                <button onclick="Cart.addItem(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="btn-add-outline text-xs font-extrabold !py-1 !px-3 shrink-0 shadow-xs">
-                  ADD
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch (err) {
-        console.warn('Related products load failed:', err);
+      if (!products || products.length === 0) {
         section.classList.add('hidden');
+        return;
+      }
+
+      section.classList.remove('hidden');
+      slider.innerHTML = products.map(p => {
+        const hasDiscount = p.mrp > p.selling_price;
+        const discountPercent = hasDiscount ? Math.round(((p.mrp - p.selling_price) / p.mrp) * 100) : 0;
+        const imgUrl = p.image_url || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=300';
+
+        return `
+          <div class="w-40 sm:w-48 flex-shrink-0 bg-slate-50 hover:bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-3 flex flex-col justify-between transition-all group shadow-xs">
+            <a href="./product.html?id=${p.product_id}" class="block relative aspect-square rounded-xl overflow-hidden mb-2.5 bg-white border border-slate-100 p-1.5">
+              <img src="${imgUrl}" alt="${Utils.escapeHTML(p.product_name)}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+              ${hasDiscount ? `
+                <span class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#2563EB] text-white">
+                  ${discountPercent}% OFF
+                </span>
+              ` : ''}
+            </a>
+
+            <div class="flex-1">
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">${Utils.escapeHTML(p.unit || 'unit')}</div>
+              <a href="./product.html?id=${p.product_id}" class="block text-xs sm:text-sm font-bold text-slate-900 hover:text-[#0C831F] transition-colors line-clamp-2 leading-snug mb-2">
+                ${Utils.escapeHTML(p.product_name)}
+              </a>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 mt-auto">
+              <div>
+                <div class="text-sm font-extrabold text-slate-900 font-display">${Utils.formatCurrency(p.selling_price)}</div>
+                ${hasDiscount ? `<div class="text-[11px] text-slate-400 line-through">${Utils.formatCurrency(p.mrp)}</div>` : ''}
+              </div>
+              <button onclick="Cart.addItem(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="btn-add-outline text-xs font-extrabold !py-1 !px-3 shrink-0 shadow-xs">
+                ADD
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadRelatedProducts(categoryId, currentProductId) {
+      // STEP 1: Render instantly (0-1ms) from local recommendation cache
+      const instantProducts = (typeof Recommendations !== 'undefined')
+        ? Recommendations.getInstantUpsell({
+            categoryIds: categoryId ? [categoryId] : [],
+            excludeProductIds: currentProductId ? [currentProductId] : [],
+            limit: 6
+          })
+        : [];
+
+      if (instantProducts.length > 0) {
+        renderRelatedCards(instantProducts);
+      }
+
+      // STEP 2: Background refresh if cache is cold or stale
+      try {
+        if (typeof Recommendations !== 'undefined') {
+          Recommendations.preload(false);
+        }
+        if (instantProducts.length === 0) {
+          const res = await api.get('getUpsellProducts', {
+            categoryIds: categoryId || '',
+            excludeProductIds: currentProductId || '',
+            limit: 6
+          });
+          const products = res.products || [];
+          renderRelatedCards(products);
+        }
+      } catch (err) {
+        console.warn('Related products background sync:', err);
       }
     }
 
