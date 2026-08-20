@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/favicon.ico", "destination": "/frontend/favicon.ico" },
+    { "source": "/icons/(.*)", "destination": "/frontend/icons/$1" },
+    { "source": "/css/(.*)", "destination": "/frontend/css/$1" },
+    { "source": "/js/(.*)", "destination": "/frontend/js/$1" },
+    { "source": "/", "destination": "/frontend/index.html" },
+    { "source": "/shop", "destination": "/frontend/shop.html" },
+    { "source": "/product", "destination": "/frontend/product.html" },
+    { "source": "/cart", "destination": "/frontend/cart.html" },
+    { "source": "/checkout", "destination": "/frontend/checkout.html" },
+    { "source": "/order-success", "destination": "/frontend/order-success.html" },
+    { "source": "/track-order", "destination": "/frontend/track-order.html" },
+    { "source": "/orders", "destination": "/frontend/orders.html" },
+    { "source": "/profile", "destination": "/frontend/profile.html" },
+    { "source": "/login", "destination": "/frontend/login.html" },
+    { "source": "/register", "destination": "/frontend/register.html" },
+    { "source": "/admin", "destination": "/frontend/admin/index.html" },
+    { "source": "/admin/pos", "destination": "/frontend/admin/pos.html" },
+    { "source": "/admin/dashboard", "destination": "/frontend/admin/dashboard.html" },
+    { "source": "/admin/orders", "destination": "/frontend/admin/orders.html" },
+    { "source": "/admin/products", "destination": "/frontend/admin/products.html" },
+    { "source": "/admin/categories", "destination": "/frontend/admin/categories.html" },
+    { "source": "/admin/pickup-slots", "destination": "/frontend/admin/pickup-slots.html" },
+    { "source": "/admin/customers", "destination": "/frontend/admin/customers.html" },
+    { "source": "/admin/reports", "destination": "/frontend/admin/reports.html" },
+    { "source": "/admin/settings", "destination": "/frontend/admin/settings.html" },
+    { "source": "/sw.js", "destination": "/frontend/sw.js" },
+    { "source": "/manifest.json", "destination": "/frontend/manifest.json" },
+    { "source": "/admin/(.*)", "destination": "/frontend/admin/$1" },
+    { "source": "/(.*)", "destination": "/frontend/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/frontend/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" }
+      ]
+    }
+  ]
+}
